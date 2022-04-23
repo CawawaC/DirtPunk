@@ -412,7 +412,7 @@ GameObject:
   - component: {fileID: 670411159}
   - component: {fileID: 670411163}
   m_Layer: 0
-  m_Name: pollutant
+  m_Name: Pollutant
   m_TagString: Pollutant
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -495,7 +495,7 @@ Transform:
   m_Children:
   - {fileID: 1883685418}
   m_Father: {fileID: 0}
-  m_RootOrder: 5
+  m_RootOrder: 4
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!54 &670411163
 Rigidbody:
@@ -706,6 +706,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1153090018}
   - component: {fileID: 1153090019}
+  - component: {fileID: 1153090020}
   m_Layer: 0
   m_Name: Manager
   m_TagString: Untagged
@@ -726,7 +727,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
-  m_RootOrder: 4
+  m_RootOrder: 5
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &1153090019
 MonoBehaviour:
@@ -757,6 +758,19 @@ MonoBehaviour:
       m_Action: Left Click
       m_Flags: 0
     m_Flags: 0
+--- !u!114 &1153090020
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1153090017}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 749334bccfc84b3428c5a9c42ccf4f3e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  timerDelay: 0
 --- !u!1001 &1241186391
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -837,7 +851,7 @@ PrefabInstance:
     - target: {fileID: 919132149155446097, guid: 8444f2a1b515a9746b49e113f9301625,
         type: 3}
       propertyPath: m_Name
-      value: pollutantModel
+      value: PollutantModel
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 8444f2a1b515a9746b49e113f9301625, type: 3}

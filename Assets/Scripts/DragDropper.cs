@@ -35,7 +35,7 @@ public class DragDropper : MonoBehaviour
         Ray ray = mainCamera.ScreenPointToRay(Mouse.current.position.ReadValue());
         RaycastHit hit;
         if (Physics.Raycast(ray, out hit)) {
-            if (hit.collider != null && (hit.collider.gameObject.CompareTag("Pollutant"))) {
+            if (hit.collider != null && hit.collider.gameObject.CompareTag("Pollutant") && !Input.GetKey(KeyCode.P)) {
                 if (hit.collider!= null) {
                     StartCoroutine(DragUpdate(hit.collider.gameObject));
                 }
