@@ -46,7 +46,6 @@ public class Zoomer : MonoBehaviour
 
     private IEnumerator ZoomIn(GameObject clickedObject)
     {
-       // camLoc = mainCamera.transform.position;
         zoomLoc = clickedObject.transform.position;
         zoomLoc.z -= 15;
         timer = 0.0f;
