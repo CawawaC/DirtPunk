@@ -22,6 +22,8 @@ public class Manager : MonoBehaviour
     public GameObject blackBox;
     private CanvasGroup blackBoxCG;
 
+
+
     //fungi spawning
     //public GameObject fungiPrefab;
     //private Vector3 fungiSpawnLoc;
@@ -54,10 +56,8 @@ public class Manager : MonoBehaviour
     private int visiblePollutants;
 
     //variables related to sound
-    public AudioSource hintSound;
-    public AudioSource sound1;
-    public AudioSource sound2;
-    public AudioSource sound3;
+    public GameObject audioPuzzleObject;
+    private AudioPuzzle audioPuzzle;
 
     private void Awake()
     {
@@ -87,11 +87,13 @@ public class Manager : MonoBehaviour
 
         //initialize gameplay variables
         pollutantList = new List<GameObject>();
-        hintSound.volume = 0.0f;
         initiallyVisiblePollutants = 0;
 
         //call coroutine that fades scene in
         StartCoroutine(FadeIn());
+
+        // Find the audio puzzle manager script
+        audioPuzzle = audioPuzzleObject.GetComponent<AudioPuzzle>();
     }
 
     private void OnEnable()
@@ -100,11 +102,6 @@ public class Manager : MonoBehaviour
         leftClick.performed += leftClicked;
         rightClick.Enable();
         rightClick.performed += rightClicked;
-        //enable sounds
-        hintSound.enabled = true;
-        sound1.enabled = true;
-        sound2.enabled = true;
-        sound3.enabled = true;
     }
     
     private void OnDisable()
@@ -114,11 +111,7 @@ public class Manager : MonoBehaviour
         leftClick.Disable();
         rightClick.performed -= rightClicked;
         rightClick.Disable();
-        //disable sounds
-        hintSound.enabled = false;
-        sound1.enabled = false;
-        sound2.enabled = false;
-        sound3.enabled = false;
+
         //empty pollutant list just in case
         pollutantList.Clear();
     }
@@ -180,8 +173,10 @@ public class Manager : MonoBehaviour
                     initiallyVisiblePollutants = visiblePollutants;
                 }
                 Debug.Log(initiallyVisiblePollutants - visiblePollutants);
-                hintSound.volume = (float)(initiallyVisiblePollutants - visiblePollutants)/ initiallyVisiblePollutants;
-                hintSound.Play();
+
+                // Not going to be necessary as is, but keeping this as a reference
+                //audioPuzzle.SetVolume((float)(initiallyVisiblePollutants - visiblePollutants)/ initiallyVisiblePollutants);
+                //audioPuzzle.PlayHint();
             }
         }
     }
