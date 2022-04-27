@@ -23,8 +23,8 @@ public class Manager : MonoBehaviour
     private CanvasGroup blackBoxCG;
 
     //fungi spawning
-    public GameObject fungiPrefab;
-    private Vector3 fungiSpawnLoc;
+    //public GameObject fungiPrefab;
+    //private Vector3 fungiSpawnLoc;
 
     //variables related to drag and drop with left mouse
     [SerializeField]
@@ -41,12 +41,23 @@ public class Manager : MonoBehaviour
     private float zoomTime = 2.0f;
 
     //variables related to path drawing
-    List<Vector3> linePoints;
+    private List<Vector3> linePoints;
     float drawTimer;
     public float drawTimerDelay;
-    GameObject newLine;
-    LineRenderer drawLine;
+    private GameObject newLine;
+    private LineRenderer drawLine;
     float lineWidth;
+
+    //variables related to pollutant removal 
+    public List<GameObject> pollutantList;
+    private int initiallyVisiblePollutants;
+    private int visiblePollutants;
+
+    //variables related to sound
+    public AudioSource hintSound;
+    public AudioSource sound1;
+    public AudioSource sound2;
+    public AudioSource sound3;
 
     private void Awake()
     {
@@ -59,13 +70,14 @@ public class Manager : MonoBehaviour
     }
 
     void Start()
-    {
-        //initialize variables
+    { 
+        //fungiSpawnLoc = new Vector3(-20,15,100);
+        
+        //initialize camera & UI variables
         mainCamera = Camera.main;
         camLoc = mainCamera.transform.position;
         blackBoxCG = blackBox.GetComponent<CanvasGroup>();
         blackBoxCG.alpha = 1;
-        fungiSpawnLoc = new Vector3(-20,15,100);
 
         //initialize drawing variables
         linePoints = new List<Vector3>();
@@ -73,33 +85,51 @@ public class Manager : MonoBehaviour
         drawTimer = drawTimerDelay;
         lineWidth = 0.5f;
 
+        //initialize gameplay variables
+        pollutantList = new List<GameObject>();
+        hintSound.volume = 0.0f;
+        initiallyVisiblePollutants = 0;
+
         //call coroutine that fades scene in
         StartCoroutine(FadeIn());
     }
 
-    //hook up mouse actions with correct function
     private void OnEnable()
-    {
+    {   //hook up mouse actions with correct function
         leftClick.Enable();
         leftClick.performed += leftClicked;
         rightClick.Enable();
         rightClick.performed += rightClicked;
+        //enable sounds
+        hintSound.enabled = true;
+        sound1.enabled = true;
+        sound2.enabled = true;
+        sound3.enabled = true;
     }
+    
     private void OnDisable()
     {
+        //unhook functions from mouse actions
         leftClick.performed -= leftClicked;
         leftClick.Disable();
         rightClick.performed -= rightClicked;
         rightClick.Disable();
+        //disable sounds
+        hintSound.enabled = false;
+        sound1.enabled = false;
+        sound2.enabled = false;
+        sound3.enabled = false;
+        //empty pollutant list just in case
+        pollutantList.Clear();
     }
 
-    // Try to minimize code here as it is called once per frame
+    // try to minimize code here as it is called once per frame
     void Update()
     {
-        //Spawn more fungi if m key is pressed
+        //spawn more fungi if m key is pressed
         //if (Input.GetKeyDown(KeyCode.M)) {Instantiate(fungiPrefab, fungiSpawnLoc, Quaternion.identity); }
 
-        //Drawing code
+        //drawing code
         if (Input.GetMouseButtonDown(0) && Input.GetKey(KeyCode.P))
         {
             newLine = new GameObject();
@@ -127,8 +157,9 @@ public class Manager : MonoBehaviour
         }
     }
 
-    //function called at left click in charge of dragging and dropping
-    //It moves anything in "draggable" layer
+    //function called at left click
+    //in charge of dragging and dropping anything in draggable layer
+    //and playing music at correct volume depending on pollutants around mother tree
     private void leftClicked(InputAction.CallbackContext context)
     {
         Ray ray = mainCamera.ScreenPointToRay(Mouse.current.position.ReadValue());
@@ -138,10 +169,19 @@ public class Manager : MonoBehaviour
             
             if (hit.collider != null && hit.collider.gameObject.layer == 6 && !Input.GetKey(KeyCode.P))
             {
-                if (hit.collider != null)
-                {
                     StartCoroutine(DragUpdate(hit.collider.gameObject));
+            }
+
+            else if (hit.collider != null && hit.collider.gameObject.CompareTag("HintTrigger") && !Input.GetKey(KeyCode.P))
+            {
+                //adjust volume of mother tree hint depending on how many pollutants the player moved
+                visiblePollutants=VisiblePollutantCounter();
+                if (initiallyVisiblePollutants == 0) {
+                    initiallyVisiblePollutants = visiblePollutants;
                 }
+                Debug.Log(initiallyVisiblePollutants - visiblePollutants);
+                hintSound.volume = (float)(initiallyVisiblePollutants - visiblePollutants)/ initiallyVisiblePollutants;
+                hintSound.Play();
             }
         }
     }
@@ -162,14 +202,27 @@ public class Manager : MonoBehaviour
         }
     }
 
-    //Helper function for path drawing
+    //helper function for path drawing
     Vector3 GetMousePosition()
     {
         Ray ray = mainCamera.ScreenPointToRay(Input.mousePosition);
         return ray.origin + ray.direction * 110;
     }
 
-    //Coroutine that fades scene in
+    //function that returns how many pollutants that are visible in the scene
+    private int VisiblePollutantCounter() {
+        int counter = 0;
+        for (int i = 0; i < pollutantList.Count; i++)
+        {
+            if (pollutantList[i].transform.GetChild(0).GetComponent<Renderer>().isVisible)
+            {
+                counter += 1;
+            }
+        }
+        return counter;
+    }
+
+    //coroutine that fades scene in
     private IEnumerator FadeIn()
     {
         while (blackBoxCG.alpha>=0)
@@ -179,7 +232,7 @@ public class Manager : MonoBehaviour
         }
     }
    
-    //Coroutine in charge of dragging and dropping called in LeftClicked function
+    //coroutine in charge of dragging and dropping called in LeftClicked function
     private IEnumerator DragUpdate(GameObject clickedObject)
     {
         float initialDistance = Vector3.Distance(clickedObject.transform.position, mainCamera.transform.position);
@@ -196,7 +249,7 @@ public class Manager : MonoBehaviour
         }
     }
 
-    //Coroutine in charge of dragging and dropping called in Rightclicked function
+    //coroutine in charge of dragging and dropping called in Rightclicked function
     private IEnumerator ZoomIn(GameObject clickedObject)
     {
         zoomLoc = clickedObject.transform.position;
