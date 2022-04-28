@@ -6,6 +6,10 @@ TagManager:
   tags:
   - Pollutant
   - HintTrigger
+  - PuzzleNoise
+  - AppearingMicrobe
+  - GrowingFungi
+  - GrowingMicrobe
   layers:
   - Default
   - TransparentFX

@@ -1,3 +1,5 @@
+
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine.UI;
@@ -63,7 +65,22 @@ public class Manager : MonoBehaviour
     //variables related to sound puzzle
     public GameObject audioPuzzleObject;
     private AudioPuzzle audioPuzzle;
+    
+    private int noiseIndex;
+    private string noiseChoices;
+
+    //variables(bools) related to game state
     private bool nodesGrown;
+    private bool puzzleSolved;
+
+    //variables related to post-puzzle microbe action
+    //appearing microbe list
+    //going to have to add these manually to list as the objects start off disabled
+    public List<GameObject> amList;
+    //growing microbe list
+    private GameObject[] gmList;
+    //growing fungi list
+    private GameObject[] gfList;
 
     private void Awake()
     {
@@ -94,7 +111,14 @@ public class Manager : MonoBehaviour
         //initialize gameplay variables
         pollutantList = new List<GameObject>();
         initiallyVisiblePollutants = 0;
+        noiseIndex = -1;
+        noiseChoices = "";  
+        gmList = GameObject.FindGameObjectsWithTag("GrowingMicrobe");
+        gfList = GameObject.FindGameObjectsWithTag("GrowingFungi");
+
+        //initialize game state bools
         nodesGrown = false;
+        puzzleSolved = false;
 
         //call coroutine that fades scene in
         StartCoroutine(FadeIn());
@@ -159,16 +183,34 @@ public class Manager : MonoBehaviour
         //when player initially removes enough pollutants
         if (initiallyVisiblePollutants - visiblePollutants > pollutantsToRemove && !nodesGrown)
         {
-            mainRootModel.GetComponent<GrowRoots>().Grow();
+            mainRootModel.GetComponent<GrowRoots>().Grow(1);
             nodesGrown = true;
             //also set shader of hint trigger from lit to glowing
             hintTriggerModel.GetComponent<Renderer>().material = glow;
+        }
+        //if player initially solves puzzle
+        if (noiseChoices.Contains("12345") && !puzzleSolved) {
+            puzzleSolved = true;
+            //enable game items with tag "AppearingMicrobe"
+            foreach (GameObject am in amList) {
+                am.SetActive(true);
+            }
+            //grow game items with tag "GrowingMicrobe"
+            foreach (GameObject gm in gmList)
+            {
+                gm.GetComponent<GrowRoots>().Grow(1);
+            }
+            //grow baby fungi a little
+            foreach (GameObject gf in gfList)
+            {
+                gf.GetComponent<GrowRoots>().Grow(0.5f);
+            }
         }
     }
 
     //function called at left click
     //in charge of dragging and dropping anything in draggable layer
-    //and playing music at correct volume depending on pollutants around mother tree
+    //and playing music hint & selecting puzzle noises
     private void leftClicked(InputAction.CallbackContext context)
     {
         //check number of removed pollutants
@@ -192,6 +234,16 @@ public class Manager : MonoBehaviour
                 //check if player has removed enough pollutants to enable hint
                 if (initiallyVisiblePollutants - visiblePollutants > pollutantsToRemove) {
                     audioPuzzle.PlayHint();
+                }
+            }
+
+            else if (hit.collider != null && hit.collider.gameObject.CompareTag("PuzzleNoise") && !Input.GetKey(KeyCode.P) && nodesGrown)
+            {
+                int.TryParse(hit.collider.gameObject.name.Substring(7,1),out noiseIndex);
+                if (noiseIndex > -1) {
+                    noiseChoices=String.Concat(noiseChoices,noiseIndex);
+                    Debug.Log(noiseChoices);
+                    audioPuzzle.PlayElement(noiseIndex); 
                 }
             }
         }

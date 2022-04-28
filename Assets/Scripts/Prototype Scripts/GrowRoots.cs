@@ -35,20 +35,19 @@ public class GrowRoots : MonoBehaviour
     }
 
     //Function called externally that grows gameobject 
-    public void Grow() { 
+    public void Grow(float percentage) { 
         for (int i = 0; i < growRootsMaterials.Count; i++)
             {
-                StartCoroutine(GrowRootsGrow(growRootsMaterials[i]));
+                StartCoroutine(GrowRootsCR(growRootsMaterials[i],percentage));
             }
     }
 
-    IEnumerator GrowRootsGrow (Material mat)
+    IEnumerator GrowRootsCR (Material mat, float percentage)
     {
         float growValue = mat.GetFloat("Grow_");
-        Debug.Log(growValue);
         if (!fullyGrown)
         {
-            while(growValue < maxGrow)
+            while(growValue < maxGrow*percentage)
             {
                 growValue += 1 / (timeToGrow / refreshRate);
                 mat.SetFloat("Grow_", growValue);
@@ -57,9 +56,10 @@ public class GrowRoots : MonoBehaviour
             }
         }
 
-        if (growValue >= maxGrow) { 
+        if (growValue >= maxGrow*percentage) { 
             fullyGrown = true;
         }
     }
+
 }
  

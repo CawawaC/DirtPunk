@@ -36,7 +36,7 @@ public class AudioPuzzle : MonoBehaviour {
     // Set volume of melody
     // vol goes from 0 to 1
     public void SetVolume(float vol) {
-        return;
+        
 
         float currentVol = 0;
         mixer.GetFloat("melodicVolume", out currentVol);
@@ -44,6 +44,7 @@ public class AudioPuzzle : MonoBehaviour {
         if(mixer != null) {
             mixer.SetFloat("melodicVolume", vol);
         }
+        return;
     }
 
     void OnEnable() {
