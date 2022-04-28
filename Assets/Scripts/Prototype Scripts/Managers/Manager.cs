@@ -18,11 +18,14 @@ public class Manager : MonoBehaviour
     private Camera mainCamera;
     private WaitForFixedUpdate waitForFixedUpdate = new WaitForFixedUpdate();
 
+    //variables related to visual effects
+    public GameObject mainRootModel;
+    public GameObject hintTriggerModel;
+    public Material glow;
+
     //UI elements
     public GameObject blackBox;
     private CanvasGroup blackBoxCG;
-
-
 
     //fungi spawning
     //public GameObject fungiPrefab;
@@ -44,20 +47,23 @@ public class Manager : MonoBehaviour
 
     //variables related to path drawing
     private List<Vector3> linePoints;
-    float drawTimer;
-    public float drawTimerDelay;
+    private float drawTimer;
+    private float drawTimerDelay;
     private GameObject newLine;
     private LineRenderer drawLine;
-    float lineWidth;
+    private float lineWidth;
 
     //variables related to pollutant removal 
     public List<GameObject> pollutantList;
     private int initiallyVisiblePollutants;
     private int visiblePollutants;
+    //set to 10 after testing
+    private int pollutantsToRemove = 1;
 
-    //variables related to sound
+    //variables related to sound puzzle
     public GameObject audioPuzzleObject;
     private AudioPuzzle audioPuzzle;
+    private bool nodesGrown;
 
     private void Awake()
     {
@@ -88,6 +94,7 @@ public class Manager : MonoBehaviour
         //initialize gameplay variables
         pollutantList = new List<GameObject>();
         initiallyVisiblePollutants = 0;
+        nodesGrown = false;
 
         //call coroutine that fades scene in
         StartCoroutine(FadeIn());
@@ -148,6 +155,15 @@ public class Manager : MonoBehaviour
         {
             linePoints.Clear();
         }
+
+        //when player initially removes enough pollutants
+        if (initiallyVisiblePollutants - visiblePollutants > pollutantsToRemove && !nodesGrown)
+        {
+            mainRootModel.GetComponent<GrowRoots>().Grow();
+            nodesGrown = true;
+            //also set shader of hint trigger from lit to glowing
+            hintTriggerModel.GetComponent<Renderer>().material = glow;
+        }
     }
 
     //function called at left click
@@ -155,6 +171,12 @@ public class Manager : MonoBehaviour
     //and playing music at correct volume depending on pollutants around mother tree
     private void leftClicked(InputAction.CallbackContext context)
     {
+        //check number of removed pollutants
+        visiblePollutants =VisiblePollutantCounter();
+        if (initiallyVisiblePollutants == 0) {
+            initiallyVisiblePollutants = visiblePollutants;
+        }
+
         Ray ray = mainCamera.ScreenPointToRay(Mouse.current.position.ReadValue());
         RaycastHit hit;
         if (Physics.Raycast(ray, out hit))
@@ -167,16 +189,10 @@ public class Manager : MonoBehaviour
 
             else if (hit.collider != null && hit.collider.gameObject.CompareTag("HintTrigger") && !Input.GetKey(KeyCode.P))
             {
-                //adjust volume of mother tree hint depending on how many pollutants the player moved
-                visiblePollutants=VisiblePollutantCounter();
-                if (initiallyVisiblePollutants == 0) {
-                    initiallyVisiblePollutants = visiblePollutants;
+                //check if player has removed enough pollutants to enable hint
+                if (initiallyVisiblePollutants - visiblePollutants > pollutantsToRemove) {
+                    audioPuzzle.PlayHint();
                 }
-                Debug.Log(initiallyVisiblePollutants - visiblePollutants);
-
-                // Not going to be necessary as is, but keeping this as a reference
-                //audioPuzzle.SetVolume((float)(initiallyVisiblePollutants - visiblePollutants)/ initiallyVisiblePollutants);
-                //audioPuzzle.PlayHint();
             }
         }
     }
