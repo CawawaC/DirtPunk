@@ -10,6 +10,7 @@ using UnityEngine.Audio;
 public class AudioPuzzle : MonoBehaviour {
 
     public List<AudioSource> melodicElements;   // The melodic chops, ordered by solution play order
+    public AudioSource hint;
     public AudioMixer mixer;
 
     // Start is called before the first frame update
@@ -23,8 +24,9 @@ public class AudioPuzzle : MonoBehaviour {
     }
 
     public void PlayHint() {
-        PlayElement(0);
-        // TODO: play the expected sequence of elements
+        if (hint != null) {
+            hint.Play();
+        }
     }
 
     public void PlayElement(int i) {
