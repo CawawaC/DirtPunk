@@ -24,6 +24,7 @@ public class Manager : MonoBehaviour
     public GameObject mainRootModel;
     public GameObject hintTriggerModel;
     public Material glow;
+    public GameObject spawner;
 
     //UI elements
     public GameObject blackBox;
@@ -72,6 +73,7 @@ public class Manager : MonoBehaviour
     //variables(bools) related to game state
     private bool nodesGrown;
     private bool puzzleSolved;
+    private bool fungiFed;
 
     //variables related to post-puzzle microbe action
     //appearing microbe list
@@ -81,6 +83,10 @@ public class Manager : MonoBehaviour
     private GameObject[] gmList;
     //growing fungi list
     private GameObject[] gfList;
+    //fungi food list
+    public List<GameObject> ffList;
+    //eaten food list
+    public List<GameObject> efList;
 
     private void Awake()
     {
@@ -112,13 +118,18 @@ public class Manager : MonoBehaviour
         pollutantList = new List<GameObject>();
         initiallyVisiblePollutants = 0;
         noiseIndex = -1;
-        noiseChoices = "";  
+        //Debugging
+        //noiseChoices = "12345";
+        noiseChoices = "";
         gmList = GameObject.FindGameObjectsWithTag("GrowingMicrobe");
         gfList = GameObject.FindGameObjectsWithTag("GrowingFungi");
+        ffList = new List<GameObject>();
+        efList = new List<GameObject>();
 
         //initialize game state bools
         nodesGrown = false;
         puzzleSolved = false;
+        fungiFed = false;
 
         //call coroutine that fades scene in
         StartCoroutine(FadeIn());
@@ -143,8 +154,9 @@ public class Manager : MonoBehaviour
         rightClick.performed -= rightClicked;
         rightClick.Disable();
 
-        //empty pollutant list just in case
+        //empty generated prefab list just in case
         pollutantList.Clear();
+        ffList.Clear();
     }
 
     // try to minimize code here as it is called once per frame
@@ -189,10 +201,12 @@ public class Manager : MonoBehaviour
             hintTriggerModel.GetComponent<Renderer>().material = glow;
         }
         //if player initially solves puzzle
-        if (noiseChoices.Contains("12345") && !puzzleSolved) {
+        if (noiseChoices.Contains("12345") && !puzzleSolved)
+        {
             puzzleSolved = true;
             //enable game items with tag "AppearingMicrobe"
-            foreach (GameObject am in amList) {
+            foreach (GameObject am in amList)
+            {
                 am.SetActive(true);
             }
             //grow game items with tag "GrowingMicrobe"
@@ -205,7 +219,24 @@ public class Manager : MonoBehaviour
             {
                 gf.GetComponent<GrowRoots>().Grow(0.5f);
             }
+            //spawn fungi food in random locations
+            spawner.GetComponent<RockSpawner>().SpawnFood();
         }
+
+        //if food exists in the scene
+        if (!fungiFed && puzzleSolved)
+        {
+            for (int i = 0; i < gfList.Length; i++) {
+                for (int j = 0; j < ffList.Count; j++) {
+                    if (CollisionDetection(gfList[i], ffList[j])) {
+                        if (!efList.Contains(ffList[j])) {efList.Add(ffList[j]); }
+                        if (efList.Count == ffList.Count) { fungiFed = true; }
+                    }
+                }
+            }
+        }
+
+        if (fungiFed) { Debug.Log("All fed"); }
     }
 
     //function called at left click
@@ -270,6 +301,18 @@ public class Manager : MonoBehaviour
     {
         Ray ray = mainCamera.ScreenPointToRay(Input.mousePosition);
         return ray.origin + ray.direction * 110;
+    }
+
+
+    //Function that detects "collision" between two game objects
+    //Not actual collision, just if  it appears as if they are colliding to the player
+    private bool CollisionDetection(GameObject a, GameObject b) {
+        Vector3 aScreenPos = mainCamera.WorldToScreenPoint(a.transform.position);
+        Vector3 bScreenPos = mainCamera.WorldToScreenPoint(b.transform.position);
+        if (aScreenPos.x - bScreenPos.x < 15 && aScreenPos.y - bScreenPos.y < 15) {
+            return true;
+        }
+        return false;
     }
 
     //function that returns how many pollutants that are visible in the scene
