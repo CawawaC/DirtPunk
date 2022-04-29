@@ -35,8 +35,7 @@ public class GrowRoots : MonoBehaviour
     }
 
     //Function called externally that grows gameobject 
-    public void Grow(float percentage) {
-        fullyGrown = false;
+    public void Grow(float percentage) { 
         for (int i = 0; i < growRootsMaterials.Count; i++)
             {
                 StartCoroutine(GrowRootsCR(growRootsMaterials[i],percentage));
