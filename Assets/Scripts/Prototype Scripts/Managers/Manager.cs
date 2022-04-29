@@ -157,6 +157,7 @@ public class Manager : MonoBehaviour
         //empty generated prefab list just in case
         pollutantList.Clear();
         ffList.Clear();
+        efList.Clear();
     }
 
     // try to minimize code here as it is called once per frame
@@ -223,20 +224,34 @@ public class Manager : MonoBehaviour
             spawner.GetComponent<RockSpawner>().SpawnFood();
         }
 
-        //if food exists in the scene
+        //puzzle is solved but fungi have not been fed
         if (!fungiFed && puzzleSolved)
         {
+            //check for collisions between food and fungi
             for (int i = 0; i < gfList.Length; i++) {
                 for (int j = 0; j < ffList.Count; j++) {
                     if (CollisionDetection(gfList[i], ffList[j])) {
-                        if (!efList.Contains(ffList[j])) {efList.Add(ffList[j]); }
-                        if (efList.Count == ffList.Count) { fungiFed = true; }
+                        
+                        if (!efList.Contains(ffList[j])) {
+                            efList.Add(ffList[j]);
+                            ffList[j].SetActive(false);
+                        }
+                        //and set fungi fed to true if all the food has more or less been eaten
+                        if (ffList.Count-efList.Count<3) { fungiFed = true; }
                     }
                 }
             }
         }
 
-        if (fungiFed) { Debug.Log("All fed"); }
+        //if fungi have been fed then trigger the rest of their growth
+        if (fungiFed) {
+            //grow fungi fully
+            foreach (GameObject gf in gfList)
+            {
+                gf.GetComponent<GrowRoots>().Grow(1);
+            }
+        }
+ 
     }
 
     //function called at left click
@@ -260,21 +275,21 @@ public class Manager : MonoBehaviour
                     StartCoroutine(DragUpdate(hit.collider.gameObject));
             }
 
-            else if (hit.collider != null && hit.collider.gameObject.CompareTag("HintTrigger") && !Input.GetKey(KeyCode.P))
+            else if (hit.collider != null && hit.collider.gameObject.CompareTag("HintTrigger") && !Input.GetKey(KeyCode.P) && !puzzleSolved)
             {
                 //check if player has removed enough pollutants to enable hint
-                if (initiallyVisiblePollutants - visiblePollutants > pollutantsToRemove) {
+                if (initiallyVisiblePollutants - visiblePollutants > pollutantsToRemove ) {
                     audioPuzzle.PlayHint();
                 }
             }
 
-            else if (hit.collider != null && hit.collider.gameObject.CompareTag("PuzzleNoise") && !Input.GetKey(KeyCode.P) && nodesGrown)
+            else if (hit.collider != null && hit.collider.gameObject.CompareTag("PuzzleNoise") && !Input.GetKey(KeyCode.P) && nodesGrown && !puzzleSolved)
             {
                 int.TryParse(hit.collider.gameObject.name.Substring(7,1),out noiseIndex);
                 if (noiseIndex > -1) {
                     noiseChoices=String.Concat(noiseChoices,noiseIndex);
                     Debug.Log(noiseChoices);
-                    audioPuzzle.PlayElement(noiseIndex); 
+                    audioPuzzle.PlayElement(noiseIndex-1); 
                 }
             }
         }
@@ -309,7 +324,7 @@ public class Manager : MonoBehaviour
     private bool CollisionDetection(GameObject a, GameObject b) {
         Vector3 aScreenPos = mainCamera.WorldToScreenPoint(a.transform.position);
         Vector3 bScreenPos = mainCamera.WorldToScreenPoint(b.transform.position);
-        if (aScreenPos.x - bScreenPos.x < 15 && aScreenPos.y - bScreenPos.y < 15) {
+        if (Math.Abs(aScreenPos.x - bScreenPos.x) < 50 && Math.Abs(aScreenPos.y - bScreenPos.y) < 50) {
             return true;
         }
         return false;
