@@ -30,10 +30,6 @@ public class Manager : MonoBehaviour
     public GameObject blackBox;
     private CanvasGroup blackBoxCG;
 
-    //fungi spawning
-    //public GameObject fungiPrefab;
-    //private Vector3 fungiSpawnLoc;
-
     //variables related to drag and drop with left mouse
     [SerializeField]
     private InputAction leftClick;
@@ -49,7 +45,7 @@ public class Manager : MonoBehaviour
     private float zoomTime = 2.0f;
 
     //variables related to path drawing
-    private List<Vector3> linePoints;
+    public List<Vector3> linePoints;
     private float drawTimer;
     private float drawTimerDelay;
     private GameObject newLine;
@@ -74,6 +70,7 @@ public class Manager : MonoBehaviour
     private bool nodesGrown;
     private bool puzzleSolved;
     private bool fungiFed;
+    private bool plantConnected;
 
     //variables related to post-puzzle microbe action
     //appearing microbe list
@@ -100,8 +97,6 @@ public class Manager : MonoBehaviour
 
     void Start()
     { 
-        //fungiSpawnLoc = new Vector3(-20,15,100);
-        
         //initialize camera & UI variables
         mainCamera = Camera.main;
         camLoc = mainCamera.transform.position;
@@ -130,6 +125,7 @@ public class Manager : MonoBehaviour
         nodesGrown = false;
         puzzleSolved = false;
         fungiFed = false;
+        plantConnected = false;
 
         //call coroutine that fades scene in
         StartCoroutine(FadeIn());
@@ -163,36 +159,6 @@ public class Manager : MonoBehaviour
     // try to minimize code here as it is called once per frame
     void Update()
     {
-        //spawn more fungi if m key is pressed
-        //if (Input.GetKeyDown(KeyCode.M)) {Instantiate(fungiPrefab, fungiSpawnLoc, Quaternion.identity); }
-
-        //drawing code
-        if (Input.GetMouseButtonDown(0) && Input.GetKey(KeyCode.P))
-        {
-            newLine = new GameObject();
-            drawLine = newLine.AddComponent<LineRenderer>();
-            drawLine.material = new Material(Shader.Find("Sprites/Default"));
-            drawLine.startWidth = lineWidth;
-            drawLine.endWidth = lineWidth;
-        }
-
-        if (Input.GetMouseButton(0) && Input.GetKey(KeyCode.P))
-        {
-            drawTimer -= Time.deltaTime;
-            if (drawTimer <= 0)
-            {
-                linePoints.Add(GetMousePosition());
-                drawLine.positionCount = linePoints.Count;
-                drawLine.SetPositions(linePoints.ToArray());
-                drawTimer = drawTimerDelay;
-            }
-        }
-
-        if (Input.GetMouseButtonUp(0))
-        {
-            linePoints.Clear();
-        }
-
         //when player initially removes enough pollutants
         if (initiallyVisiblePollutants - visiblePollutants > pollutantsToRemove && !nodesGrown)
         {
@@ -244,14 +210,44 @@ public class Manager : MonoBehaviour
         }
 
         //if fungi have been fed then trigger the rest of their growth
-        if (fungiFed) {
+        //and enable line drawing as an interaction
+        if (fungiFed && !plantConnected) {
             //grow fungi fully
             foreach (GameObject gf in gfList)
             {
                 gf.GetComponent<GrowRoots>().Grow(1);
             }
+
+            //drawing interaction
+            if (Input.GetMouseButtonDown(0) && Input.GetKey(KeyCode.P))
+            {
+                newLine = new GameObject();
+                drawLine = newLine.AddComponent<LineRenderer>();
+                drawLine.material = new Material(Shader.Find("Sprites/Default"));
+                drawLine.startWidth = lineWidth;
+                drawLine.endWidth = lineWidth;
+            }
+
+            if (Input.GetMouseButton(0) && Input.GetKey(KeyCode.P))
+            {
+                drawTimer -= Time.deltaTime;
+                if (drawTimer <= 0)
+                {
+                    linePoints.Add(GetMousePosition());
+                    drawLine.positionCount = linePoints.Count;
+                    drawLine.SetPositions(linePoints.ToArray());
+                    drawTimer = drawTimerDelay;
+                }
+            }
+
+            if (Input.GetMouseButtonUp(0) && linePoints.Count>=1)
+            {
+                plantConnected = LineConnected();
+                linePoints.Clear();
+            }
         }
- 
+
+        if (plantConnected) { Debug.Log("Game complete"); }
     }
 
     //function called at left click
@@ -318,9 +314,8 @@ public class Manager : MonoBehaviour
         return ray.origin + ray.direction * 110;
     }
 
-
-    //Function that detects "collision" between two game objects
-    //Not actual collision, just if  it appears as if they are colliding to the player
+    //function that detects "collision" between two game objects
+    //not actual collision, just if  it appears as if they are colliding to the player
     private bool CollisionDetection(GameObject a, GameObject b) {
         Vector3 aScreenPos = mainCamera.WorldToScreenPoint(a.transform.position);
         Vector3 bScreenPos = mainCamera.WorldToScreenPoint(b.transform.position);
@@ -328,6 +323,20 @@ public class Manager : MonoBehaviour
             return true;
         }
         return false;
+    }
+
+    //function that checks if path connects plant with fungus (bottom right for now)
+    private bool LineConnected() {
+        if (31 > Math.Abs(linePoints[0].x) && 31>Math.Abs(linePoints[0].y))
+        {
+            if (linePoints[linePoints.Count - 1].x < 80 && linePoints[linePoints.Count - 1].x > 50)
+            {
+                if (linePoints[linePoints.Count - 1].y < -10 && linePoints[linePoints.Count - 1].y > -40) { return true; }
+                else { return false; }
+            }
+            else {return false;}
+        }
+        else { return false; }
     }
 
     //function that returns how many pollutants that are visible in the scene
