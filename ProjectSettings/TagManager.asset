@@ -10,6 +10,7 @@ TagManager:
   - AppearingMicrobe
   - GrowingFungi
   - GrowingMicrobe
+  - MusicManager
   layers:
   - Default
   - TransparentFX

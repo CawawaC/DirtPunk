@@ -11,8 +11,7 @@ This is the main manager for the game
 This is where most game mechanics are implemented
  */
 
-public class Manager : MonoBehaviour
-{
+public class Manager : MonoBehaviour {
     //singleton pattern
     public static Manager instance;
 
@@ -62,7 +61,8 @@ public class Manager : MonoBehaviour
     //variables related to sound puzzle
     public GameObject audioPuzzleObject;
     private AudioPuzzle audioPuzzle;
-    
+    private MusicManager musicManager;
+
     private int noiseIndex;
     private string noiseChoices;
 
@@ -85,18 +85,15 @@ public class Manager : MonoBehaviour
     //eaten food list
     public List<GameObject> efList;
 
-    private void Awake()
-    {
+    private void Awake() {
         //make sure that there is only single instance of manager
-        if (instance != null)
-        {
+        if (instance != null) {
             Debug.LogWarning("Found more than one manager");
         }
         instance = this;
     }
 
-    void Start()
-    { 
+    void Start() {
         //initialize camera & UI variables
         mainCamera = Camera.main;
         camLoc = mainCamera.transform.position;
@@ -132,18 +129,22 @@ public class Manager : MonoBehaviour
 
         // Find the audio puzzle manager script
         audioPuzzle = audioPuzzleObject.GetComponent<AudioPuzzle>();
+
+        GameObject musicManagerObject = GameObject.FindWithTag("MusicManager");
+        if (musicManagerObject != null) {
+            musicManager = musicManagerObject.GetComponent<MusicManager>();
+            Debug.Log("test");
+        }
     }
 
-    private void OnEnable()
-    {   //hook up mouse actions with correct function
+    private void OnEnable() {   //hook up mouse actions with correct function
         leftClick.Enable();
         leftClick.performed += leftClicked;
         rightClick.Enable();
         rightClick.performed += rightClicked;
     }
-    
-    private void OnDisable()
-    {
+
+    private void OnDisable() {
         //unhook functions from mouse actions
         leftClick.performed -= leftClicked;
         leftClick.Disable();
@@ -157,53 +158,55 @@ public class Manager : MonoBehaviour
     }
 
     // try to minimize code here as it is called once per frame
-    void Update()
-    {
+    void Update() {
         //when player initially removes enough pollutants
-        if (initiallyVisiblePollutants - visiblePollutants > pollutantsToRemove && !nodesGrown)
-        {
+        if (initiallyVisiblePollutants - visiblePollutants > pollutantsToRemove && !nodesGrown) {
             mainRootModel.GetComponent<GrowRoots>().Grow(1);
             nodesGrown = true;
             //also set shader of hint trigger from lit to glowing
             hintTriggerModel.GetComponent<Renderer>().material = glow;
+
+            // trigger audio puzzle music part
+            if (musicManager != null) {
+                musicManager.PlayPart("puzzle");
+            }
         }
         //if player initially solves puzzle
-        if (noiseChoices.Contains("12345") && !puzzleSolved)
-        {
+        if (noiseChoices.Contains("12345") && !puzzleSolved) {
             puzzleSolved = true;
             //enable game items with tag "AppearingMicrobe"
-            foreach (GameObject am in amList)
-            {
+            foreach (GameObject am in amList) {
                 am.SetActive(true);
             }
             //grow game items with tag "GrowingMicrobe"
-            foreach (GameObject gm in gmList)
-            {
+            foreach (GameObject gm in gmList) {
                 gm.GetComponent<GrowRoots>().Grow(1);
             }
             //grow baby fungi a little
-            foreach (GameObject gf in gfList)
-            {
+            foreach (GameObject gf in gfList) {
                 gf.GetComponent<GrowRoots>().Grow(0.5f);
             }
             //spawn fungi food in random locations
             spawner.GetComponent<RockSpawner>().SpawnFood();
+
+            if (musicManager != null) {
+                musicManager.PlayPart("growth");
+            }
         }
 
         //puzzle is solved but fungi have not been fed
-        if (!fungiFed && puzzleSolved)
-        {
+        if (!fungiFed && puzzleSolved) {
             //check for collisions between food and fungi
             for (int i = 0; i < gfList.Length; i++) {
                 for (int j = 0; j < ffList.Count; j++) {
                     if (CollisionDetection(gfList[i], ffList[j])) {
-                        
+
                         if (!efList.Contains(ffList[j])) {
                             efList.Add(ffList[j]);
                             ffList[j].SetActive(false);
                         }
                         //and set fungi fed to true if all the food has more or less been eaten
-                        if (ffList.Count-efList.Count<3) { fungiFed = true; }
+                        if (ffList.Count - efList.Count < 3) { fungiFed = true; }
                     }
                 }
             }
@@ -213,14 +216,12 @@ public class Manager : MonoBehaviour
         //and enable line drawing as an interaction
         if (fungiFed && !plantConnected) {
             //grow fungi fully
-            foreach (GameObject gf in gfList)
-            {
+            foreach (GameObject gf in gfList) {
                 gf.GetComponent<GrowRoots>().Grow(1);
             }
 
             //drawing interaction
-            if (Input.GetMouseButtonDown(0) && Input.GetKey(KeyCode.P))
-            {
+            if (Input.GetMouseButtonDown(0) && Input.GetKey(KeyCode.P)) {
                 newLine = new GameObject();
                 drawLine = newLine.AddComponent<LineRenderer>();
                 drawLine.material = new Material(Shader.Find("Sprites/Default"));
@@ -228,11 +229,9 @@ public class Manager : MonoBehaviour
                 drawLine.endWidth = lineWidth;
             }
 
-            if (Input.GetMouseButton(0) && Input.GetKey(KeyCode.P))
-            {
+            if (Input.GetMouseButton(0) && Input.GetKey(KeyCode.P)) {
                 drawTimer -= Time.deltaTime;
-                if (drawTimer <= 0)
-                {
+                if (drawTimer <= 0) {
                     linePoints.Add(GetMousePosition());
                     drawLine.positionCount = linePoints.Count;
                     drawLine.SetPositions(linePoints.ToArray());
@@ -240,8 +239,7 @@ public class Manager : MonoBehaviour
                 }
             }
 
-            if (Input.GetMouseButtonUp(0) && linePoints.Count>=1)
-            {
+            if (Input.GetMouseButtonUp(0) && linePoints.Count >= 1) {
                 plantConnected = LineConnected();
                 linePoints.Clear();
             }
@@ -253,53 +251,41 @@ public class Manager : MonoBehaviour
     //function called at left click
     //in charge of dragging and dropping anything in draggable layer
     //and playing music hint & selecting puzzle noises
-    private void leftClicked(InputAction.CallbackContext context)
-    {
+    private void leftClicked(InputAction.CallbackContext context) {
         //check number of removed pollutants
-        visiblePollutants =VisiblePollutantCounter();
+        visiblePollutants = VisiblePollutantCounter();
         if (initiallyVisiblePollutants == 0) {
             initiallyVisiblePollutants = visiblePollutants;
         }
 
         Ray ray = mainCamera.ScreenPointToRay(Mouse.current.position.ReadValue());
         RaycastHit hit;
-        if (Physics.Raycast(ray, out hit))
-        {
-            
-            if (hit.collider != null && hit.collider.gameObject.layer == 6 && !Input.GetKey(KeyCode.P))
-            {
-                    StartCoroutine(DragUpdate(hit.collider.gameObject));
-            }
+        if (Physics.Raycast(ray, out hit)) {
 
-            else if (hit.collider != null && hit.collider.gameObject.CompareTag("HintTrigger") && !Input.GetKey(KeyCode.P) && !puzzleSolved)
-            {
+            if (hit.collider != null && hit.collider.gameObject.layer == 6 && !Input.GetKey(KeyCode.P)) {
+                StartCoroutine(DragUpdate(hit.collider.gameObject));
+            } else if (hit.collider != null && hit.collider.gameObject.CompareTag("HintTrigger") && !Input.GetKey(KeyCode.P) && !puzzleSolved) {
                 //check if player has removed enough pollutants to enable hint
-                if (initiallyVisiblePollutants - visiblePollutants > pollutantsToRemove ) {
+                if (initiallyVisiblePollutants - visiblePollutants > pollutantsToRemove) {
                     audioPuzzle.PlayHint();
                 }
-            }
-
-            else if (hit.collider != null && hit.collider.gameObject.CompareTag("PuzzleNoise") && !Input.GetKey(KeyCode.P) && nodesGrown && !puzzleSolved)
-            {
-                int.TryParse(hit.collider.gameObject.name.Substring(7,1),out noiseIndex);
+            } else if (hit.collider != null && hit.collider.gameObject.CompareTag("PuzzleNoise") && !Input.GetKey(KeyCode.P) && nodesGrown && !puzzleSolved) {
+                int.TryParse(hit.collider.gameObject.name.Substring(7, 1), out noiseIndex);
                 if (noiseIndex > -1) {
-                    noiseChoices=String.Concat(noiseChoices,noiseIndex);
+                    noiseChoices = String.Concat(noiseChoices, noiseIndex);
                     Debug.Log(noiseChoices);
-                    audioPuzzle.PlayElement(noiseIndex-1); 
+                    audioPuzzle.PlayElement(noiseIndex - 1);
                 }
             }
         }
     }
 
     //function called at right click in charge of zooming in and out
-    private void rightClicked(InputAction.CallbackContext context)
-    {
+    private void rightClicked(InputAction.CallbackContext context) {
         Ray ray = mainCamera.ScreenPointToRay(Mouse.current.position.ReadValue());
         RaycastHit hit;
-        if (Physics.Raycast(ray, out hit))
-        {
-            if (hit.collider != null && hit.collider.gameObject.layer == 3)
-            {
+        if (Physics.Raycast(ray, out hit)) {
+            if (hit.collider != null && hit.collider.gameObject.layer == 3) {
                 zoomDir = hit.collider.gameObject.GetComponent<ZoomLayerObj>().zoomDir;
                 hit.collider.gameObject.GetComponent<ZoomLayerObj>().zoomDir *= -1;
                 StartCoroutine(ZoomIn(hit.collider.gameObject));
@@ -308,8 +294,7 @@ public class Manager : MonoBehaviour
     }
 
     //helper function for path drawing
-    Vector3 GetMousePosition()
-    {
+    Vector3 GetMousePosition() {
         Ray ray = mainCamera.ScreenPointToRay(Input.mousePosition);
         return ray.origin + ray.direction * 110;
     }
@@ -327,25 +312,18 @@ public class Manager : MonoBehaviour
 
     //function that checks if path connects plant with fungus (bottom right for now)
     private bool LineConnected() {
-        if (31 > Math.Abs(linePoints[0].x) && 31>Math.Abs(linePoints[0].y))
-        {
-            if (linePoints[linePoints.Count - 1].x < 80 && linePoints[linePoints.Count - 1].x > 50)
-            {
-                if (linePoints[linePoints.Count - 1].y < -10 && linePoints[linePoints.Count - 1].y > -40) { return true; }
-                else { return false; }
-            }
-            else {return false;}
-        }
-        else { return false; }
+        if (31 > Math.Abs(linePoints[0].x) && 31 > Math.Abs(linePoints[0].y)) {
+            if (linePoints[linePoints.Count - 1].x < 80 && linePoints[linePoints.Count - 1].x > 50) {
+                if (linePoints[linePoints.Count - 1].y < -10 && linePoints[linePoints.Count - 1].y > -40) { return true; } else { return false; }
+            } else { return false; }
+        } else { return false; }
     }
 
     //function that returns how many pollutants that are visible in the scene
     private int VisiblePollutantCounter() {
         int counter = 0;
-        for (int i = 0; i < pollutantList.Count; i++)
-        {
-            if (pollutantList[i].transform.GetChild(0).GetComponent<Renderer>().isVisible)
-            {
+        for (int i = 0; i < pollutantList.Count; i++) {
+            if (pollutantList[i].transform.GetChild(0).GetComponent<Renderer>().isVisible) {
                 counter += 1;
             }
         }
@@ -353,25 +331,20 @@ public class Manager : MonoBehaviour
     }
 
     //coroutine that fades scene in
-    private IEnumerator FadeIn()
-    {
-        while (blackBoxCG.alpha>=0)
-        {
+    private IEnumerator FadeIn() {
+        while (blackBoxCG.alpha >= 0) {
             yield return waitForFixedUpdate;
-            blackBoxCG.alpha -= 0.3f*Time.deltaTime;
+            blackBoxCG.alpha -= 0.3f * Time.deltaTime;
         }
     }
-   
+
     //coroutine in charge of dragging and dropping called in LeftClicked function
-    private IEnumerator DragUpdate(GameObject clickedObject)
-    {
+    private IEnumerator DragUpdate(GameObject clickedObject) {
         float initialDistance = Vector3.Distance(clickedObject.transform.position, mainCamera.transform.position);
         clickedObject.TryGetComponent<Rigidbody>(out var rb);
-        while (leftClick.ReadValue<float>() != 0)
-        {
+        while (leftClick.ReadValue<float>() != 0) {
             Ray ray = mainCamera.ScreenPointToRay(Mouse.current.position.ReadValue());
-            if (rb != null)
-            {
+            if (rb != null) {
                 Vector2 direction = ray.GetPoint(initialDistance) - clickedObject.transform.position;
                 rb.velocity = direction * mouseDragPhysicsSpeed;
                 yield return waitForFixedUpdate;
@@ -380,17 +353,14 @@ public class Manager : MonoBehaviour
     }
 
     //coroutine in charge of dragging and dropping called in Rightclicked function
-    private IEnumerator ZoomIn(GameObject clickedObject)
-    {
+    private IEnumerator ZoomIn(GameObject clickedObject) {
         zoomLoc = clickedObject.transform.position;
         zoomLoc.z -= 15;
         zoomTimer = 0.0f;
-        while (zoomTimer < zoomTime)
-        {
+        while (zoomTimer < zoomTime) {
             yield return new WaitForEndOfFrame();
             zoomTimer += Time.deltaTime;
-            if (zoomDir == 1) { mainCamera.transform.position = Vector3.Lerp(camLoc, zoomLoc, zoomTimer / zoomTime); }
-            else { mainCamera.transform.position = Vector3.Lerp(zoomLoc, camLoc, zoomTimer / zoomTime); }
+            if (zoomDir == 1) { mainCamera.transform.position = Vector3.Lerp(camLoc, zoomLoc, zoomTimer / zoomTime); } else { mainCamera.transform.position = Vector3.Lerp(zoomLoc, camLoc, zoomTimer / zoomTime); }
         }
     }
 }
