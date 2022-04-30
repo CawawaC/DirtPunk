@@ -5,16 +5,13 @@ EditorBuildSettings:
   m_ObjectHideFlags: 0
   serializedVersion: 2
   m_Scenes:
-  - enabled: 0
-    path: 
-    guid: 00000000000000000000000000000000
   - enabled: 1
-    path: Assets/Scenes/Testers/PlantZoomedOut-Old.unity
-    guid: 41063681379e9c74bb348d7b76155160
-  - enabled: 0
-    path: 
-    guid: 00000000000000000000000000000000
+    path: Assets/Scenes/Intro.unity
+    guid: 6d3960d8e8fa87b4bae20099f1c593fa
   - enabled: 1
-    path: Assets/Scenes/Testers/MainGame-OLD.unity
-    guid: 124260dd7d305d942a229488bc638cbe
+    path: Assets/Scenes/PlantZoomedOut.unity
+    guid: 2bb8df7a931b00d4c832e81879ab4d80
+  - enabled: 1
+    path: Assets/Scenes/MainGame.unity
+    guid: b48130b4d03f8d647bfea97d4658a013
   m_configObjects: {}
