@@ -20,9 +20,7 @@ public class RockSpawner : MonoBehaviour
     public static int spawnNumber = 50;
 
     //food
-    //right now there is only one food prefab but I am making a list just in case we need more
-    private List<GameObject> foodPrefabList = new List<GameObject>();
-    public GameObject foodPrefab1;
+    public GameObject foodPrefab;
     public static int foodSpawnNumber = 10;
     private float foodZPos = 40;
 
@@ -38,8 +36,6 @@ public class RockSpawner : MonoBehaviour
         prefabList.Add(prefab2);
         prefabList.Add(prefab3);
         prefabList.Add(prefab4);
-
-        foodPrefabList.Add(foodPrefab1);
 
         //Spawn pollutants
         for (int i = 0; i < spawnNumber; i++)
@@ -60,7 +56,6 @@ public class RockSpawner : MonoBehaviour
     public void SpawnFood(){
         for (int i = 0; i < foodSpawnNumber; i++)
         {
-            int prefabIndex2 = UnityEngine.Random.Range(0, foodPrefabList.Count);
             //randomly generate a position within camera projection
             x = Random.Range(0.05f, 0.95f);
             y = Random.Range(0.05f, 0.95f);
@@ -68,7 +63,7 @@ public class RockSpawner : MonoBehaviour
             position = new Vector3(x, y, foodZPos);
             position = Camera.main.ViewportToWorldPoint(position);
             //spawn prefabs and add them to list of pollutants in manager
-            manager.GetComponent<Manager>().ffList.Add(Instantiate(foodPrefabList[prefabIndex2], position, Quaternion.Euler(Random.Range(0, 360), Random.Range(0, 360), Random.Range(0, 360))));
+            manager.GetComponent<Manager>().ffList.Add(Instantiate(foodPrefab, position, Quaternion.Euler(Random.Range(0, 360), Random.Range(0, 360), Random.Range(0, 360))));
         }
     }
 }

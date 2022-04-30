@@ -24,6 +24,10 @@ public class Manager : MonoBehaviour {
     public GameObject hintTriggerModel;
     public Material glow;
     public GameObject spawner;
+    public GameObject DL1;
+    public GameObject DL2;
+    public GameObject completionEffects;
+    public GameObject globalVol;
 
     //UI elements
     public GameObject blackBox;
@@ -55,14 +59,12 @@ public class Manager : MonoBehaviour {
     public List<GameObject> pollutantList;
     private int initiallyVisiblePollutants;
     private int visiblePollutants;
-    //set to 10 after testing
     private int pollutantsToRemove = 1;
 
     //variables related to sound puzzle
     public GameObject audioPuzzleObject;
     private AudioPuzzle audioPuzzle;
     private MusicManager musicManager;
-
     private int noiseIndex;
     private string noiseChoices;
 
@@ -73,9 +75,8 @@ public class Manager : MonoBehaviour {
     private bool plantConnected;
 
     //variables related to post-puzzle microbe action
-    //appearing microbe list
-    //going to have to add these manually to list as the objects start off disabled
-    public List<GameObject> amList;
+    //empty object containing microbes that will appear
+    public GameObject amContainer;
     //growing microbe list
     private GameObject[] gmList;
     //growing fungi list
@@ -94,11 +95,15 @@ public class Manager : MonoBehaviour {
     }
 
     void Start() {
-        //initialize camera & UI variables
+        //initialize camera & visual & UI variables
         mainCamera = Camera.main;
         camLoc = mainCamera.transform.position;
         blackBoxCG = blackBox.GetComponent<CanvasGroup>();
         blackBoxCG.alpha = 1;
+        DL1.SetActive(true);
+        DL2.SetActive(false);
+        globalVol.SetActive(true);
+        completionEffects.SetActive(false);
 
         //initialize drawing variables
         linePoints = new List<Vector3>();
@@ -113,12 +118,15 @@ public class Manager : MonoBehaviour {
         //Debugging
         //noiseChoices = "12345";
         noiseChoices = "";
+        amContainer.SetActive(false);
         gmList = GameObject.FindGameObjectsWithTag("GrowingMicrobe");
         gfList = GameObject.FindGameObjectsWithTag("GrowingFungi");
         ffList = new List<GameObject>();
         efList = new List<GameObject>();
 
         //initialize game state bools
+        //you can change these to true to debug specific parts of game
+        //but should always be set to false before pushes
         nodesGrown = false;
         puzzleSolved = false;
         fungiFed = false;
@@ -174,10 +182,12 @@ public class Manager : MonoBehaviour {
         //if player initially solves puzzle
         if (noiseChoices.Contains("12345") && !puzzleSolved) {
             puzzleSolved = true;
-            //enable game items with tag "AppearingMicrobe"
-            foreach (GameObject am in amList) {
-                am.SetActive(true);
-            }
+
+            //make appearing microbes visible & adjust lighting
+            amContainer.SetActive(true);
+            DL1.SetActive(false);
+            DL2.SetActive(true);
+
             //grow game items with tag "GrowingMicrobe"
             foreach (GameObject gm in gmList) {
                 gm.GetComponent<GrowRoots>().Grow(1);
@@ -245,7 +255,10 @@ public class Manager : MonoBehaviour {
             }
         }
 
-        if (plantConnected) { Debug.Log("Game complete"); }
+        if (plantConnected) {
+            globalVol.SetActive(false);
+            completionEffects.SetActive(true);
+        }
     }
 
     //function called at left click
@@ -310,13 +323,54 @@ public class Manager : MonoBehaviour {
         return false;
     }
 
-    //function that checks if path connects plant with fungus (bottom right for now)
+    //functions that checks if path connects plant with fungus 
     private bool LineConnected() {
+        //check if line was connected from plant...
         if (31 > Math.Abs(linePoints[0].x) && 31 > Math.Abs(linePoints[0].y)) {
+            //to bottom right fungus
             if (linePoints[linePoints.Count - 1].x < 80 && linePoints[linePoints.Count - 1].x > 50) {
-                if (linePoints[linePoints.Count - 1].y < -10 && linePoints[linePoints.Count - 1].y > -40) { return true; } else { return false; }
-            } else { return false; }
-        } else { return false; }
+                if (linePoints[linePoints.Count - 1].y < -10 && linePoints[linePoints.Count - 1].y > -40) { return true; } 
+                
+                //to top right fungus
+                if (linePoints[linePoints.Count - 1].x < 65 && linePoints[linePoints.Count - 1].x > 45)
+                {
+                    if (linePoints[linePoints.Count - 1].y < 45 && linePoints[linePoints.Count - 1].y > 20) { return true; }
+                    else { return false; }
+                }
+                else { return false; }
+            }
+            //to bottom left fungus
+            if (linePoints[linePoints.Count - 1].x < -40 && linePoints[linePoints.Count - 1].x > -90)
+            {
+                if (linePoints[linePoints.Count - 1].y < 10 && linePoints[linePoints.Count - 1].y > -50) { return true; }
+                else { return false; }
+            }
+            else { return false; }
+        }
+
+        //check if line was connected from to plant from...
+        else if(31 > Math.Abs(linePoints[linePoints.Count - 1].x) && 31 > Math.Abs(linePoints[linePoints.Count - 1].y)) {
+            //bottom right fungus
+            if (linePoints[0].x < 80 && linePoints[0].x > 50)
+            {
+                if (linePoints[0].y < -10 && linePoints[0].y > -50) { return true; }
+                //to top right fungus
+                if (linePoints[0].x < 65 && linePoints[0].x > 45)
+                {
+                    if (linePoints[0].y < 45 && linePoints[0].y > 20) { return true; }
+                    else { return false; }
+                }
+                else { return false; }
+            }
+            //bottom left fungus
+            if (linePoints[0].x < -40 && linePoints[0].x > -90)
+            {
+                if (linePoints[01].y < 10 && linePoints[0].y > -50) { return true; }
+                else { return false; }
+            }
+            else { return false; }
+        }
+        else { return false; }
     }
 
     //function that returns how many pollutants that are visible in the scene

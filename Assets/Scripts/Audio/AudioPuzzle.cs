@@ -13,16 +13,6 @@ public class AudioPuzzle : MonoBehaviour {
     public AudioSource hint;
     public AudioMixer mixer;
 
-    // Start is called before the first frame update
-    void Start() {
-
-    }
-
-    // Update is called once per frame
-    void Update() {
-
-    }
-
     public void PlayHint() {
         if (hint != null) {
             hint.Play();
@@ -38,8 +28,6 @@ public class AudioPuzzle : MonoBehaviour {
     // Set volume of melody
     // vol goes from 0 to 1
     public void SetVolume(float vol) {
-        
-
         float currentVol = 0;
         mixer.GetFloat("melodicVolume", out currentVol);
         Debug.Log(vol + " " + currentVol);
