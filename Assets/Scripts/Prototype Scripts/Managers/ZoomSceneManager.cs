@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
+using TMPro;
 /*
 This is the manager of the first scene of the game
 It allows the player to click on the mother plant
@@ -29,6 +30,9 @@ public class ZoomSceneManager : MonoBehaviour
     //UI elements
     public GameObject blackBox;
     private CanvasGroup blackBoxCG;
+
+    //General variables
+    private WaitForFixedUpdate waitForFixedUpdate = new WaitForFixedUpdate();
 
     private void Awake()
     {

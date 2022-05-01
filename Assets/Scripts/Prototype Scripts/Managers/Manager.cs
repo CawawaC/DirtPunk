@@ -100,7 +100,6 @@ public class Manager : MonoBehaviour {
     public GameObject dialogueBox;
     public static bool dialogueOpen;
     public GameObject responseButton;
-   // public Text speakerDialogue;
     public TextMeshProUGUI speakerDialogue;
 
     //Ink dialogue variables
