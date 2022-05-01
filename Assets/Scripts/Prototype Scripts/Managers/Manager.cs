@@ -32,6 +32,8 @@ public class Manager : MonoBehaviour {
     public GameObject globalVol;
     public GameObject[] nodeGrowingEffect;
     public GameObject[] nodeClickingEffect;
+    private IEnumerator firstCR;
+    private bool fadedOut;
 
     //UI elements
     public GameObject blackBox;
@@ -133,6 +135,7 @@ public class Manager : MonoBehaviour {
         {
             e.SetActive(false);
         }
+        fadedOut = false;
 
         //initialize drawing variables
         linePoints = new List<Vector3>();
@@ -172,8 +175,8 @@ public class Manager : MonoBehaviour {
         ContinueStory();
 
         //call coroutine that fades scene in
-        StartCoroutine(FadeIn());
-
+        firstCR = FadeIn();
+        StartCoroutine(firstCR);
         // Find the audio puzzle manager script
         audioPuzzle = audioPuzzleObject.GetComponent<AudioPuzzle>();
 
@@ -292,7 +295,7 @@ public class Manager : MonoBehaviour {
         if (!fungiFed && puzzleSolved) {
             //load correct dialogue
             if (!fungiDialogueLoaded) { 
-                LoadNewStory("FeedFungi");
+                LoadNewStory("MicrobesSpawn");
                 fungiDialogueLoaded = true;
             }
             //check for collisions between food and fungi
@@ -365,6 +368,11 @@ public class Manager : MonoBehaviour {
             }
             globalVol.SetActive(false);
             completionEffects.SetActive(true);
+            if ((int)currentStory.variablesState["fadeToBlack"] == 1 && !fadedOut) {
+                StopCoroutine(firstCR);
+                StartCoroutine(FadeOut());
+                fadedOut = true;
+            }
         }
     }
 
@@ -569,9 +577,18 @@ public class Manager : MonoBehaviour {
             yield return waitForFixedUpdate;
             blackBoxCG.alpha -= 0.3f * Time.deltaTime;
         }
-        
     }
 
+    //coroutine that fades scene out
+    private IEnumerator FadeOut()
+    {
+        while (blackBoxCG.alpha <= 1)
+        {
+            yield return waitForFixedUpdate;
+            blackBoxCG.alpha += 0.3f * Time.deltaTime;
+        }
+
+    }
     //coroutine in charge of dragging and dropping called in LeftClicked function
     private IEnumerator DragUpdate(GameObject clickedObject) {
         float initialDistance = Vector3.Distance(clickedObject.transform.position, mainCamera.transform.position);
