@@ -115,6 +115,10 @@ public class Manager : MonoBehaviour {
             Debug.LogWarning("Found more than one manager");
         }
         instance = this;
+
+        //GameObject.FindGameObjectsWithTag("MusicManager").ForEach((c) => Debug.Log(c));
+        // Destroy old music
+        Destroy(GameObject.Find("Intro Music"));
     }
 
     void Start() {
@@ -179,10 +183,10 @@ public class Manager : MonoBehaviour {
         // Find the audio puzzle manager script
         audioPuzzle = audioPuzzleObject.GetComponent<AudioPuzzle>();
 
-        GameObject musicManagerObject = GameObject.FindWithTag("MusicManager");
+
+        GameObject musicManagerObject = GameObject.Find("Music (main scene)");
         if (musicManagerObject != null) {
             musicManager = musicManagerObject.GetComponent<MusicManager>();
-            Debug.Log("test");
         }
     }
 
@@ -258,6 +262,10 @@ public class Manager : MonoBehaviour {
             nodesGrown = true;
             //also set shader of hint trigger from lit to glowing
             hintTriggerModel.GetComponent<Renderer>().material = glow;
+
+            // Trigger growth sound
+            GameObject.Find("nodules growth sound").GetComponent<AudioSource>().Play();
+            
             // trigger audio puzzle music part
             if (musicManager != null) {
                 musicManager.PlayPart("puzzle");
@@ -307,12 +315,20 @@ public class Manager : MonoBehaviour {
                             ffList[j].SetActive(false);
                             
                         }
+
+                        AudioSource[] feedSounds = GameObject.Find("fungi feed").GetComponents<AudioSource>();
+                        feedSounds[(int)UnityEngine.Random.Range(0, feedSounds.Length)].Play();
+
                         //series of dialogue at fungi being fed
                         if (efList.Count == 3 && fungiDialogueLoaded) { LoadNewStory("FungiFed1"); }
                         if (efList.Count == 4) { LoadNewStory("FungiFed2"); }
                         //and set fungi fed to true if all the food has more or less been eaten
                         if (ffList.Count - efList.Count < 3) { 
-                            fungiFed = true; 
+                            fungiFed = true;
+
+                            // Triggerfungi growth sound
+                            GameObject.Find("fungi growth sound").GetComponent<AudioSource>().Play();
+
                             LoadNewStory("FungiFed3");
                         }
                     }
@@ -358,12 +374,18 @@ public class Manager : MonoBehaviour {
                 plantConnected = LineConnected();
                 linePoints.Clear();
             }
+
+            // Trigger sequence start sound
+            GameObject.Find("fungi growth sound").GetComponent<AudioSource>().Play();
         }
 
         if (plantConnected) {
             if (!completeDialogueLoaded) { 
                 LoadNewStory("PlantConnected");
                 completeDialogueLoaded = true;
+
+                // Trigger sequence start sound
+                GameObject.Find("swell sound").GetComponent<AudioSource>().Play();
             }
             globalVol.SetActive(false);
             completionEffects.SetActive(true);
@@ -439,6 +461,7 @@ public class Manager : MonoBehaviour {
                     //check if player has removed enough pollutants to enable hint
                     if (pollutantsRemoved >= pollutantsToRemove) {
                         audioPuzzle.PlayHint();
+                        Debug.Log("audioPuzzle puzzle play hint");
                         if (!hintPlayed) { LoadNewStory("AudioPuzzle1"); }
                     }
                     hintPlayed = true;
@@ -450,6 +473,7 @@ public class Manager : MonoBehaviour {
                         noiseChoices = String.Concat(noiseChoices, noiseIndex);
                         Debug.Log(noiseChoices);
                         audioPuzzle.PlayElement(noiseIndex - 1);
+                        audioPuzzle.StopHint();
                         LoadNewStory("AudioPuzzle2");
                     }
                 }

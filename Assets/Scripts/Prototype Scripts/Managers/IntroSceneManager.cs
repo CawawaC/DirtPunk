@@ -54,6 +54,8 @@ public class IntroSceneManager : MonoBehaviour
         currentStory = new Story(inkJSON.text);
         currentStory.ChoosePathString(convoName);
         ContinueStory();
+
+        DontDestroyOnLoad(GameObject.FindWithTag("MusicManager"));
     }
 
     private void Update()

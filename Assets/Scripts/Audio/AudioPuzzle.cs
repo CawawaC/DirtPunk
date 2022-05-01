@@ -14,8 +14,15 @@ public class AudioPuzzle : MonoBehaviour {
     public AudioMixer mixer;
 
     public void PlayHint() {
+        Debug.Log("play hint sound");
         if (hint != null) {
             hint.Play();
+        }
+    }
+
+    public void StopHint() {
+        if (hint != null) {
+            hint.Stop();
         }
     }
 

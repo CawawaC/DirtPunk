@@ -11,6 +11,7 @@ TagManager:
   - GrowingFungi
   - GrowingMicrobe
   - MusicManager
+  - Sound
   layers:
   - Default
   - TransparentFX

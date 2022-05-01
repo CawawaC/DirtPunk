@@ -4,11 +4,12 @@ using UnityEngine;
 
 public class MusicManager : MonoBehaviour {
     GameObject currentPart;
+    public string initialPart = "pollution";
 
     // Start is called before the first frame update
     void Start() {
-        currentPart = GetPart("pollution");
-        PlayPart("pollution");
+        currentPart = GetPart(initialPart);
+        PlayPart(initialPart);
     }
 
     // Update is called once per frame
@@ -17,6 +18,7 @@ public class MusicManager : MonoBehaviour {
     }
 
     public void PlayPart(string partname) {
+        Debug.Log("music manager plays part: " + partname);
         StopPart(currentPart);
 
         GameObject part = GetPart(partname);
