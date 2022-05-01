@@ -5,6 +5,8 @@ using System.Collections.Generic;
 using UnityEngine.UI;
 using UnityEngine.InputSystem;
 using UnityEngine;
+using Ink.Runtime;
+using TMPro;
 
 /*
 This is the main manager for the game
@@ -28,6 +30,10 @@ public class Manager : MonoBehaviour {
     public GameObject DL2;
     public GameObject completionEffects;
     public GameObject globalVol;
+    public GameObject[] nodeGrowingEffect;
+    public GameObject[] nodeClickingEffect;
+    private IEnumerator firstCR;
+    private bool fadedOut;
 
     //UI elements
     public GameObject blackBox;
@@ -59,7 +65,8 @@ public class Manager : MonoBehaviour {
     public List<GameObject> pollutantList;
     private int initiallyVisiblePollutants;
     private int visiblePollutants;
-    private int pollutantsToRemove = 1;
+    private int pollutantsToRemove = 12;
+    private int pollutantsRemoved = 0;
 
     //variables related to sound puzzle
     public GameObject audioPuzzleObject;
@@ -67,12 +74,15 @@ public class Manager : MonoBehaviour {
     private MusicManager musicManager;
     private int noiseIndex;
     private string noiseChoices;
-
+    private bool hintPlayed;
     //variables(bools) related to game state
     private bool nodesGrown;
     private bool puzzleSolved;
+    private bool fungiDialogueLoaded;
     private bool fungiFed;
+    private bool connectionDialogueLoaded;
     private bool plantConnected;
+    private bool completeDialogueLoaded;
 
     //variables related to post-puzzle microbe action
     //empty object containing microbes that will appear
@@ -85,6 +95,19 @@ public class Manager : MonoBehaviour {
     public List<GameObject> ffList;
     //eaten food list
     public List<GameObject> efList;
+
+    //variables related to dialogue UI
+    public GameObject dialogueBox;
+    public static bool dialogueOpen;
+    public GameObject responseButton;
+    public TextMeshProUGUI speakerDialogue;
+
+    //Ink dialogue variables
+    private Story currentStory;
+    [Header("Ink JSON")]
+    [SerializeField] public TextAsset inkJSON;
+    [SerializeField] private TextMeshProUGUI responseText;
+    private string convoName;
 
     private void Awake() {
         //make sure that there is only single instance of manager
@@ -104,6 +127,14 @@ public class Manager : MonoBehaviour {
         DL2.SetActive(false);
         globalVol.SetActive(true);
         completionEffects.SetActive(false);
+        foreach (GameObject e in nodeClickingEffect) {
+            e.SetActive(false);
+        }
+        foreach (GameObject e in nodeGrowingEffect)
+        {
+            e.SetActive(false);
+        }
+        fadedOut = false;
 
         //initialize drawing variables
         linePoints = new List<Vector3>();
@@ -115,8 +146,6 @@ public class Manager : MonoBehaviour {
         pollutantList = new List<GameObject>();
         initiallyVisiblePollutants = 0;
         noiseIndex = -1;
-        //Debugging
-        //noiseChoices = "12345";
         noiseChoices = "";
         amContainer.SetActive(false);
         gmList = GameObject.FindGameObjectsWithTag("GrowingMicrobe");
@@ -127,14 +156,26 @@ public class Manager : MonoBehaviour {
         //initialize game state bools
         //you can change these to true to debug specific parts of game
         //but should always be set to false before pushes
+        hintPlayed = false;
         nodesGrown = false;
         puzzleSolved = false;
         fungiFed = false;
+        fungiDialogueLoaded = false;
+        connectionDialogueLoaded = false;
         plantConnected = false;
+        completeDialogueLoaded = false;
+
+
+        //initialize dialogue variables
+        dialogueOpen = true;
+        convoName = "PollutionInstructions";
+        currentStory = new Story(inkJSON.text);
+        currentStory.ChoosePathString(convoName);
+        ContinueStory();
 
         //call coroutine that fades scene in
-        StartCoroutine(FadeIn());
-
+        firstCR = FadeIn();
+        StartCoroutine(firstCR);
         // Find the audio puzzle manager script
         audioPuzzle = audioPuzzleObject.GetComponent<AudioPuzzle>();
 
@@ -167,22 +208,67 @@ public class Manager : MonoBehaviour {
 
     // try to minimize code here as it is called once per frame
     void Update() {
+        //open dialogue box depending on bool
+        dialogueBox.SetActive(dialogueOpen);
+
+        //update pollutant stats
+        if (!nodesGrown) {
+        visiblePollutants = VisiblePollutantCounter();
+        if (initiallyVisiblePollutants == 0)
+        {
+            initiallyVisiblePollutants = visiblePollutants;
+        }
+        pollutantsRemoved = initiallyVisiblePollutants - visiblePollutants;
+        Debug.Log("initially visible:"+initiallyVisiblePollutants+" visible now:"+visiblePollutants +" removed:"+ pollutantsRemoved);
+         }
+        //update dialogue with each pollutant removal
+        if (pollutantsRemoved < pollutantsToRemove) {
+            if (pollutantsRemoved>10) {
+               LoadNewStory("PollutionRemoval6"); 
+            }
+            else if (pollutantsRemoved > 9)
+            {
+                LoadNewStory("PollutionRemoval6");
+            }
+            else if (pollutantsRemoved > 7)
+            {
+                LoadNewStory("PollutionRemoval4");
+            }
+            else if (pollutantsRemoved > 5)
+            {
+                LoadNewStory("PollutionRemoval3");
+            }
+            else if (pollutantsRemoved > 3)
+            {
+                LoadNewStory("PollutionRemoval2");
+            }
+            else if (pollutantsRemoved > 1)
+            {
+                LoadNewStory("PollutionRemoval1");
+            }
+        }
+
         //when player initially removes enough pollutants
-        if (initiallyVisiblePollutants - visiblePollutants > pollutantsToRemove && !nodesGrown) {
+        if (pollutantsRemoved >= pollutantsToRemove && !nodesGrown) {
+            dialogueOpen = false;
+            //wait until nodes start forming to open dialogue related to node growth
+            StartCoroutine(LoadAfterSec("PlantNodulesGrow", 8));
+            //later use this to make sure player can't click on nodes until fully formed
             mainRootModel.GetComponent<GrowRoots>().Grow(1);
             nodesGrown = true;
             //also set shader of hint trigger from lit to glowing
             hintTriggerModel.GetComponent<Renderer>().material = glow;
-
             // trigger audio puzzle music part
             if (musicManager != null) {
                 musicManager.PlayPart("puzzle");
             }
         }
+
         //if player initially solves puzzle
         if (noiseChoices.Contains("12345") && !puzzleSolved) {
             puzzleSolved = true;
-
+            //load correct dialogue
+            LoadNewStory("MicrobesSpawn"); 
             //make appearing microbes visible & adjust lighting
             amContainer.SetActive(true);
             DL1.SetActive(false);
@@ -206,6 +292,11 @@ public class Manager : MonoBehaviour {
 
         //puzzle is solved but fungi have not been fed
         if (!fungiFed && puzzleSolved) {
+            //load correct dialogue
+            if (!fungiDialogueLoaded) { 
+                LoadNewStory("MicrobesSpawn");
+                fungiDialogueLoaded = true;
+            }
             //check for collisions between food and fungi
             for (int i = 0; i < gfList.Length; i++) {
                 for (int j = 0; j < ffList.Count; j++) {
@@ -214,9 +305,16 @@ public class Manager : MonoBehaviour {
                         if (!efList.Contains(ffList[j])) {
                             efList.Add(ffList[j]);
                             ffList[j].SetActive(false);
+                            
                         }
+                        //series of dialogue at fungi being fed
+                        if (efList.Count == 3 && fungiDialogueLoaded) { LoadNewStory("FungiFed1"); }
+                        if (efList.Count == 4) { LoadNewStory("FungiFed2"); }
                         //and set fungi fed to true if all the food has more or less been eaten
-                        if (ffList.Count - efList.Count < 3) { fungiFed = true; }
+                        if (ffList.Count - efList.Count < 3) { 
+                            fungiFed = true; 
+                            LoadNewStory("FungiFed3");
+                        }
                     }
                 }
             }
@@ -225,6 +323,13 @@ public class Manager : MonoBehaviour {
         //if fungi have been fed then trigger the rest of their growth
         //and enable line drawing as an interaction
         if (fungiFed && !plantConnected) {
+            //load correct dialogue
+            if (!connectionDialogueLoaded)
+            {
+                LoadNewStory("ConnectAllThings");
+                connectionDialogueLoaded = true;
+            }
+
             //grow fungi fully
             foreach (GameObject gf in gfList) {
                 gf.GetComponent<GrowRoots>().Grow(1);
@@ -256,38 +361,97 @@ public class Manager : MonoBehaviour {
         }
 
         if (plantConnected) {
+            if (!completeDialogueLoaded) { 
+                LoadNewStory("PlantConnected");
+                completeDialogueLoaded = true;
+            }
             globalVol.SetActive(false);
             completionEffects.SetActive(true);
+            if ((int)currentStory.variablesState["fadeToBlack"] == 1 && !fadedOut) {
+                StopCoroutine(firstCR);
+                StartCoroutine(FadeOut());
+                fadedOut = true;
+            }
         }
     }
 
+    /*Functions related to dialogue*/
+   
+    //function hooked to response button
+    public void MakeChoice()
+    {
+        currentStory.ChooseChoiceIndex(0);
+        ContinueStory();
+    }
+    //function that loads next dialogue from story as long as there are more lines to read
+    public void ContinueStory()
+    {
+        if (currentStory.canContinue)
+        {
+            speakerDialogue.text = currentStory.Continue();
+            if (speakerDialogue.text == "") { dialogueOpen = false; }
+            else { DisplayChoice();  }
+           
+        }
+    }
+    //Only shows response button if it's an option to click it
+    private void DisplayChoice()
+    {
+        List<Choice> currentChoices = currentStory.currentChoices;
+        if (currentChoices.Count > 0)
+        {
+            Choice choice = currentStory.currentChoices[0];
+            if (choice.text == "padding")
+            {
+                responseButton.SetActive(false);
+            }
+            else
+            {
+                responseButton.SetActive(true);
+                responseText.text = choice.text;
+            }
+        }
+    }
+
+    //function that loads story when given story name
+    public void LoadNewStory(string newConvo)
+    {
+        convoName = newConvo;
+        currentStory.ChoosePathString(newConvo);
+        dialogueOpen = true;
+        ContinueStory();
+    }
+
+    /*Functions in related to game mechanics*/
     //function called at left click
     //in charge of dragging and dropping anything in draggable layer
     //and playing music hint & selecting puzzle noises
     private void leftClicked(InputAction.CallbackContext context) {
-        //check number of removed pollutants
-        visiblePollutants = VisiblePollutantCounter();
-        if (initiallyVisiblePollutants == 0) {
-            initiallyVisiblePollutants = visiblePollutants;
-        }
+        //make sure that interactions can only happen when user is incapable of clicking through dialogue
+        if (!responseButton.activeInHierarchy) { 
+            Ray ray = mainCamera.ScreenPointToRay(Mouse.current.position.ReadValue());
+            RaycastHit hit;
+            if (Physics.Raycast(ray, out hit)) {
 
-        Ray ray = mainCamera.ScreenPointToRay(Mouse.current.position.ReadValue());
-        RaycastHit hit;
-        if (Physics.Raycast(ray, out hit)) {
-
-            if (hit.collider != null && hit.collider.gameObject.layer == 6 && !Input.GetKey(KeyCode.P)) {
-                StartCoroutine(DragUpdate(hit.collider.gameObject));
-            } else if (hit.collider != null && hit.collider.gameObject.CompareTag("HintTrigger") && !Input.GetKey(KeyCode.P) && !puzzleSolved) {
-                //check if player has removed enough pollutants to enable hint
-                if (initiallyVisiblePollutants - visiblePollutants > pollutantsToRemove) {
-                    audioPuzzle.PlayHint();
-                }
-            } else if (hit.collider != null && hit.collider.gameObject.CompareTag("PuzzleNoise") && !Input.GetKey(KeyCode.P) && nodesGrown && !puzzleSolved) {
-                int.TryParse(hit.collider.gameObject.name.Substring(7, 1), out noiseIndex);
-                if (noiseIndex > -1) {
-                    noiseChoices = String.Concat(noiseChoices, noiseIndex);
-                    Debug.Log(noiseChoices);
-                    audioPuzzle.PlayElement(noiseIndex - 1);
+                if (hit.collider != null && hit.collider.gameObject.layer == 6 && !Input.GetKey(KeyCode.P)) {
+                    StartCoroutine(DragUpdate(hit.collider.gameObject));
+                } else if (hit.collider != null && hit.collider.gameObject.CompareTag("HintTrigger") && !Input.GetKey(KeyCode.P) && !puzzleSolved && (int)currentStory.variablesState["hintEnabled"] == 1) {
+                    //check if player has removed enough pollutants to enable hint
+                    if (pollutantsRemoved >= pollutantsToRemove) {
+                        audioPuzzle.PlayHint();
+                        if (!hintPlayed) { LoadNewStory("AudioPuzzle1"); }
+                    }
+                    hintPlayed = true;
+                } else if (hit.collider != null && hit.collider.gameObject.CompareTag("PuzzleNoise") && !Input.GetKey(KeyCode.P) && nodesGrown && !puzzleSolved && (int)currentStory.variablesState["puzzleEnabled"] == 1) {
+                    int.TryParse(hit.collider.gameObject.name.Substring(7, 1), out noiseIndex);
+                    if (noiseIndex > 0) {
+                        //call coroutine that turns related visual effect on and off
+                        StartCoroutine(NodeClicked(noiseIndex-1));
+                        noiseChoices = String.Concat(noiseChoices, noiseIndex);
+                        Debug.Log(noiseChoices);
+                        audioPuzzle.PlayElement(noiseIndex - 1);
+                        LoadNewStory("AudioPuzzle2");
+                    }
                 }
             }
         }
@@ -384,6 +548,28 @@ public class Manager : MonoBehaviour {
         return counter;
     }
 
+    //coroutine that loads dialogue after certain amount of seconds
+    //going to use to turn on some effects as well as it is only called when nodules grow
+    IEnumerator LoadAfterSec(string path, int sec)
+    {
+        //yield on a new YieldInstruction that waits for 5 seconds.
+        yield return new WaitForSeconds(sec);
+        foreach (GameObject e in nodeGrowingEffect)
+        {
+            e.SetActive(true);
+        }
+        dialogueOpen = true;
+        LoadNewStory(path);
+    }
+
+    //coroutine in charge of dragging and dropping called in Rightclicked function
+    private IEnumerator NodeClicked(int nodeInd)
+    {
+        nodeClickingEffect[nodeInd].SetActive(true);
+        yield return new WaitForSeconds(20);
+        nodeClickingEffect[nodeInd].SetActive(false);
+    }
+
     //coroutine that fades scene in
     private IEnumerator FadeIn() {
         while (blackBoxCG.alpha >= 0) {
@@ -392,6 +578,16 @@ public class Manager : MonoBehaviour {
         }
     }
 
+    //coroutine that fades scene out
+    private IEnumerator FadeOut()
+    {
+        while (blackBoxCG.alpha <= 1)
+        {
+            yield return waitForFixedUpdate;
+            blackBoxCG.alpha += 0.3f * Time.deltaTime;
+        }
+
+    }
     //coroutine in charge of dragging and dropping called in LeftClicked function
     private IEnumerator DragUpdate(GameObject clickedObject) {
         float initialDistance = Vector3.Distance(clickedObject.transform.position, mainCamera.transform.position);

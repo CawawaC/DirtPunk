@@ -1,320 +1,198 @@
-=== MotherTreeIntro ====
-// The mother tree gives a quest to our player
+VAR hintEnabled=0
+VAR puzzleEnabled=0
+VAR fadeToBlack=0
 
-= MTIStitch1
-Mother Tree: Child, can you hear me?
-    + [Yes, I hear you!]
-        -> MTIStitch2
-       
-= MTIStitch2
-Mother Tree: You are both a listener and a singer, rarities in this cosm of a once swirling, chattering underground. Most are now voiceless and unable to hear each other.
-    + [Next]
-        -> MTIStitch3
-        
-= MTIStitch3
-Mother Tree: I am the Mother, matriarch of this world, birthed and devoured. It is failing. The web has become wicked, our language lost, and the songs are severed.
-    + [Next]
-        -> MTIStitch4
-
-= MTIStitch4
-Mother Tree: Go, restore the language to our senses, follow the song and let it grow.
-    + [Continue]
+//start of main scene
+=== PollutionInstructions ====
+= PIStitch2
+<color=lightblue>Mother Tree:</color> What once fed us and let us grow tall, has choked the soil. There is no room for our songs. Residuals still crowd <font="Dirtpunk SDF">this</font> space. <br><color=yellow>Click and drag the red pollutants off the screen</color>
+    + [Start]
         -> END
 
-=== AwakenPlant ====
-// The player now must awaken the plant by clicking on it.
-
-= APStitch1
-Mother Tree: This plant runs deep but not strong. It is drowsy and unaware of your presence, resting in a chemical slumber which it will soon be unable to rely upon, leaving the plant weak to the rising storm. You must awaken it.
-    + [Continue]
+//each called the more pollutants you remove
+=== PollutionRemoval1 ====     
+= PRStitch 
+<color=green>Plant:</color> What are you DOING? I was born with <font="Dirtpunk SDF">my</font> chemicals. I’ll DIE without <font="Dirtpunk SDF">them</font>. 
+    + [padding]
+        -> END
+        
+ === PollutionRemoval2 ====  
+= PRStitch 
+<color=green>Plant:</color> Don’t cut me off! <font="Dirtpunk SDF">Oh</font>, you’re <i>killing</i> me, you STAMENPISTEL!<br><color=lightblue>Mother Tree:</color> Keep it up.
+    + [padding]
+        -> END
+        
+=== PollutionRemoval3 ====  
+= PRStitch 
+<color=green>Plant:</color> I'm DONE!<br>Wait, is <font="Dirtpunk SDF">that</font> a vibration in the soil? Who is whispering?
+    + [padding]
+        -> END
+        
+=== PollutionRemoval4 ====  
+= PRStitch 
+<color=green>Plant:</color> What does it want? What <font="Dirtpunk SDF">does</font> it mean?
+    + [padding]
+        -> END
+        
+=== PollutionRemoval5 ====
+= PRStitch 
+<color=green>Plant:</color> I wish I could reach out <font="Dirtpunk SDF">to it</font>. But how?
+    + [padding]
+        -> END
+        
+=== PollutionRemoval6 ====
+= PRStitch 
+<color=green>Plant:</color> I feel a tickling, <font="Dirtpunk SDF">like</font> I need to move!
+    + [padding]
         -> END
 
-=== ClickingOnPollution ====
-// The mother tree instructs the player to clear the polllution. The plant is addicted to the chemicals, is desperate and dramatic saying it will die
 
-= COPStitch1
-Mother Tree: What once fed us and let us grow tall, has make the soil an empty cosm. There is no space for others to sing with my child. The residuals still crowd this space.
-    + [Next]
-        -> COPStitch2
-
-// As you remove chemicals, the plant is still a little drugged but recovering some sense of hearing for the song, its sense of communication is slowly coming back. Coming out of drug haze.
-
-// This part is related to in game progrress/variables. I've left it like this as instructed, but it's related to in-game logic, it shouldn't be "click through"
-
-= COPStitch2
-Plant: NO! Don’t cut me off, friend. I need my chemicals. I was born with them and I’ll die without them.
-    + [Next]
-        -> COPStitch3
-        
-= COPStitch3
-Plant: Don’t take them away! You’re killing me! Mother Tree: Keep it up.
-    + [Next]
-        -> COPStitch4
-
-= COPStitch4
-Plant: I'm DONE! Wait, a vibration in the soil? Who’s whispering?
-    + [Next]
-        -> COPStitch5
-        
-= COPStitch5
-What does it want?
-    + [Next]
-        -> COPStitch6
-
-= COPStitch6
-I wish I could cry out and meet it… but how?
-    + [Next]
-        -> COPStitch7
-        
-= COPStitch7
-Is it just me or do I want to MOVE!?
-    + [Continue]
-        -> END
-
+// Called when plant nodules start growing
 === PlantNodulesGrow ====
-// The plant nodules start growing
-
 = PNGStitch1
-Plant: Wow! Look at me! Stretchyyyyyyy.
+<color=green>Plant:</color> Look at me! Stretchyyyyyyy.
     + [Next]
         -> PNGStitch2
        
 = PNGStitch2
-What are these things for?
-OH MY GOD WHAT’S THIS???
-    + [Continue]
-        -> END
+<color=green>Plant:</color> What are these <font="Dirtpunk SDF">things</font> for?<br>SWEET SALTED SAP WHAT’S THIS???
+    + [Next]
+        -> PNGStitch3
 
-=== AudioPuzzle ====
-// Start of audio puzzle
-
-= APStitch1
-Mother Tree: Little sproutling, you are ready to sing again. Listen and teach them the microbial melody. 
-    + [Next]
-        -> APStitch2
-        
-// This part is *not* click through. As you click on the nodules, these messages appear
-
-= APStitch2
-Plant: HELL YEAH I HAVE A VOICE.
-    + [Next]
-        -> APStitch3
-        
-= APStitch3
-What are these murmurs and mumbles. I like it.
-    + [Next]
-        -> APStitch4
-
-= APStitch4
-Plant: I can hum, in this usually quiet void... and something else, an echo of a melodic memory. 
-    + [Next]
-        -> APStitch5
-
-= APStitch5
-Is it just me or do I want to MOVE!?
-    + [Next]
-        -> APStitch6
-
-// if you play the wrong melody, one of the following three warning message appears (APStitch6, APStitch7, APStitch8)
-
-= APStitch6
-Mother tree: Be mindful of what you play, for who knows what it might conjure. Much lurks in the soil, friends, foe, and neither. This song can summon all…
-    + [Next]
-        -> APStitch7
-        
-= APStitch7
-Mother tree: Listen carefully to my song
-    + [Next]
-        -> APStitch8
-        
-= APStitch8
-Mother tree: Listen carefully, it goes like this 1aaa aaaaaa aa aaaa aa
-    + [Next]
-        -> APStitch9
- 
- // else, when you play it correctly
- 
- = APStitch9
-Mother Tree: That’s it, you’ve sung in harmony. You've led these microbes home, I feel their excitement again
-    + [Continue]
+= PNGStitch3
+<color=lightblue>Mother Tree:</color> Little sproutling, you are <font="Dirtpunk SDF">ready</font> to sing again. Listen and teach the others the microbial melody.<br><color=yellow>Click on the flashing cell to hear a hint</color>
+    + [Start]
+        ~ hintEnabled=1
         -> END
 
 
+// Instruction of audio puzzle-triggered by clicking on hint
+=== AudioPuzzle1 ====
+= APStitch
+<color=lightblue>Mother Tree:</color> Be mindful of what you play. Much lurks in the soil, friends, foe, and <font="Dirtpunk SDF">neither</font>. The song can summon all.<br><color=yellow>Click on the plant nodes to recreate the hint tune</color>
+    + [Start]
+        ~ puzzleEnabled=1
+        -> END
+
+// Plant dialogue called at first node interaction    
+=== AudioPuzzle2 ====
+ = APStitch
+<color=green>Plant:</color> HELL YEAH I HAVE A VOICE!
+    + [padding]
+        -> END
+    
+        
+// Microbe dialogue after audio puzzle
+// Microbes all spawn at once
 === MicrobesSpawn ====
-// Audio puzzle complete, now the player is interacting with the microbes
-
 = MSStitch1
-Mother tree: That’s it, you’ve sung in harmony. You've led these microbes home, I feel their excitement again.
+<color=lightblue>Mother Tree:</color> Yes, this is the <font="Dirtpunk SDF">true</font> song. The microbes are home, I feel their quivering, shivering joy.
     + [Next]
         -> MSStitch2
-        
-// Everytime more microbes spawn we get a new message. These messages happen as we click.
-
        
 = MSStitch2
-Plant: Little ones, you bring a hidden taste to me. I feel... rejuvenated. How could I forget this feeling?
+<color=green>Plant:</color> WOW! What are these tiny dots doing? What is this thrilling, filling feeling? 
     + [Next]
         -> MSStitch3
-        
+
 = MSStitch3
-Plant: Feeling?
+<color=purple>Microbe1:</color> Hi hi <font="Dirtpunk SDF">hi</font>! You’re back, we’ll unpack!    
     + [Next]
         -> MSStitch4
 
 = MSStitch4
-Microbe: Come, come. We stay for trade.
+<color=purple>Microbe2:</color> You forgot? We care, we share! We shake it down we break it down! We nosh and snack and sup! 
     + [Next]
         -> MSStitch5
-
+        
 = MSStitch5
-Microbe: Forgotten host, have a sip and show me your goods.
+<color=purple>Microbe2:</color> We plot for good rot! The good slop is in <font="Dirtpunk SDF">the</font> rot! We split, we breed, we live to feed! 
     + [Next]
-        -> MSStitch6
+        -> FeedFungi
         
-= MSStitch6
-Microbe: Refreshing exchange, your feed is fantastic. What can I do for you?
-    + [Next]
-        -> MSStitch7
-
-= MSStitch7
-Microbe: ONLY IF WE DON’T MAKE THE BEST CASE?
-    + [Next]
-        -> MSStitch8
         
-= MSStitch8
-Microbe: You forgot about us, and suckled from another. We are the makers of the world. We will always survive but your life is short without us. 
-    + [Continue]
-        -> END
-
+//Come straight to fungi feeding sequence after microbe convo
 === FeedFungi ====
-
-= FFStitch1
-Mother Tree: Click on the fungi that have appeared
-    + [Next]
-        -> FFStitch2
-        
-// This is not clickthrough, this is based on the player dragging and dropping organic matter on the fungi
-
 = FFStitch2
-Fungi: Hello For now, I am small but bring me enough food and I could enwrap the earth.
-    + [Next]
-        -> FFStitch3
-
-= FFStitch3
-Fungi: Sweet preserved decay, can you feel that? My tastebuds have been caressed once again. Let me unfold... and... reach.
-    + [Next]
-        -> FFStitch4
-        
-// BEST CASE OPTIONAL: Player drags and drops microbes on slots, and FFStitch4, 5, and 6 appear one by one.
-
-= FFStitch4
-Mother tree: No one should be alone, bring company and cooperation to my child. Fill up their emptiness.
-    + [Next]
-        -> FFStitch5
-        
-= FFStitch5
-What’s this? I feel a joy and song within me, and strength coursing through my cells. Bring me more, for they are bursting with energy.
-    + [Next]
-        -> FFStitch6
-
-= FFStitch6
-You forgot about us, and suckled from another. We are the makers of the world. We will always survive but your life is short without us. Feed us and we will bring you strength, good looks and resilience.
-    + [Next]
-        -> FFStitch7
-        
-= FFStitch7
-No one is an individual but a thriving system of many. Few see this anymore.
-    + [Next]
-        -> FFStitch8
-        
-= FFStitch8
-No one is an individual but a thriving system of many. Few see this anymore.
-    + [Next]
-        -> FFStitch9
-
-// Root grow
+<color=orange>Fungi:</color> I’m <font="Dirtpunk SDF">small</font>, yes. But bring me food and I’ll thread myself through all things and entwine you and the earth. No cap!<br><color=yellow>Drag and drop small white particles onto the fuzzy white fungi.</color>
+    + [Start]
+        -> END
+//Dialogue called at various points of fungi feeding
+=== FungiFed1 ====
+= FFStitch
+<color=orange>Fungi:</color> Sweet preserved decay, can you <i>feeeeeel</i> that? My tastebuds are opening <font="Dirtpunk SDF">again</font>. Let me pull... and… reach.
+    + [padding]
+        -> END
+=== FungiFed2 ====
+= FFStitch
+<color=lightblue>Mother Tree:</color> No one should be alone, least of all a little fungi. <font="Dirtpunk SDF">Fill</font> up their emptiness and be filled.
+    + [padding]
+        -> END
+=== FungiFed3 ====
+= FFStitch
+<color=orange>Fungi:</color> I feel a rich spore song emerging, mycelium daydreams coursing, caressing, webbing. 
+    + [padding]
+        -> ConnectAllThings
 
 
-= FFStitch9
-Plant: My journey grows longer, but it’ll be a lonesome exploration by all accounts…
-
-    + [Continue]
+// Called after fungi have all been fed
+=== ConnectAllThings ====
+= CATStitch1
+<color=lightblue>Mother Tree:</color> Can you feel the power? <font="Dirtpunk SDF">These</font> are networked beings, they need connection to survive. Plug them in to <font="Dirtpunk SDF">charge</font> their awareness and sing as one among many. 
+    + [Next]
+        -> CATStitch2
+= CATStitch2
+<color=yellow>Hold P and draw a path with your mouse connecting the plant with one of the fungi</color>
+    + [Start]
         -> END
 
-// END OF BEST CASE
-// Root grows/Audio puzzle complete
-
-=== ConnectAllThings ====
-// The player connects all things together
-
-
-= MTIStitch1
-Mother tree: I can sense their new power. But they need more friends to survive and defend themselves. They no longer need to be alone. Plug them into the network, so they can hear and sing as one among many. Let them access….a greater awareness.
+// Called after plant has been connected to fungi
+=== PlantConnected ====
+= PCStitch1
+<color=lightblue>Mother Tree:</color> Hold on to your roots, little one. Do you hear that humming murmur rustling through every fiber? That’s the world in waiting.
     + [Next]
-        -> MTIStitch2
-     
-// Root grows
-= MTIStitch2
-Root: I feel naked and weak, without any support. Who will guide me? 
-    + [Next]
-        -> MTIStitch3
-      
-// Click on the fungi: Fungi
-= MTIStitch3
-I am ready to entwine, and repair the severed ties.  
-    + [Next]
-        -> MTIStitch4
+        -> PCStitch2
 
-// The plant is connected to the WWW: Fungi
-= MTIStitch4
-Hold on to your roots, little one. Do you hear that humming murmur rustling through every fiber? That’s the world in waiting.
+= PCStitch2
+<color=green>Plant:</color> Woah, what is this? <font="Dirtpunk SDF">Links</font> of the past, present, future?
     + [Next]
-        -> MTIStitch5
+        -> PCStitch3
 
-// Plant is connected to the WWW: Plant
-= MTIStitch5
-What are these beautiful words, these symphonies of species? Woah, what is this?  Links of the past, present, future. Messages and memories. Advise, warnings and friendship.
+= PCStitch3
+<color=purple>Microbe2:</color> Wohoo! Let’s renew! Let’s come through! For you, for me, for we!
     + [Next]
-        -> MTIStitch6
+        -> PCStitch4
 
-// Plant is connected to the WWWt: Fungi
-= MTIStitch6
-How I have missed this sweet embrace. Little sproutling, my tendrils can bring food from beyond your reach and ferry your voice across the cosmos. Let my entangled body shield you from harm.
+= PCStitch4
+<color=orange>Fungi:</color> Darling sproutling, our tendrils can bring food from beyond your reach and our touch can ferry the song across our cosmos. 
     + [Next]
-        -> MTIStitch7
-
-// Plant is connected to the WWW: Mother tree]
-= MTIStitch7
-My child, how proud you’ve made me. - The louder the song, the more we can suck smog from the sky. Bury it in our roots and the depths of the earth. 
-    + [Next]
-        -> MTIStitch8
+        -> PCStitch5
         
-= MTIStitch8
-How I have missed this sweet embrace. Little sproutling, my tendrils can bring food from beyond your reach and ferry your voice across the cosmos. Let my entangled body shield you from harm.
+= PCStitch5
+<color=green>Plant:</color> We can sing louder than anyone, we can <i>stamenpistel</i> SING! 
     + [Next]
-        -> MTIStitch9
+        -> PCStitch6
         
-= MTIStitch9
-As a community, we follow birth and death as one, living by each other. Across the web, I have felt roots burn, wither, and drown. The world is changing, to survive this we must be connected in multispecies harmony.
+= PCStitch6
+<color=lightblue>Mother Tree:</color> Across the web, I have felt roots burn, wither, and drown. Now that you have found each other, the quiet void has cracked open. The song has returned. 
     + [Next]
-        -> MTIStitch10
+        -> PCStitch7
         
-    = MTIStitch10
-For the artificial streams that made us drowsy will become a sporadic splatter, and to thrive while still providing for the 1bipeds1, we must rekindle past knowledge and kinship.
+= PCStitch7
+<color=lightblue>Mother Tree:</color> The louder the song, the more we can pull smog from the sky. Bury it in our roots deep in the earth. And <i>sing</i>.
     + [Next]
-        -> MTIStitch11
-        
-    = MTIStitch11
-How I have missed this sweet embrace. Little sproutling, my tendrils can bring food from beyond your reach and ferry your voice across the cosmos. Let my entangled body shield you from harm.
-    + [Next]
-        -> MTIStitch12
-        
-= MTIStitch12
-The song needs to cover us all, and thanks to you the quiet void has started to crack open. Take the lead and spread our song, allow it to flourish far and wide. Build soil and song as one.
-    + [Continue]
+        -> PCStitch8
+
+= PCStitch8
+<color=lightblue>Mother Tree:</color> Can you feel the silence around the edges of our song? All soil can sing again, if given space and care.<br>In your corner, do you sing?
+    + [Finish]
+        ~ fadeToBlack=1
         -> END
         
 //////////////////////////////////////////
 /////////////////////// TRUE END
 //////////////////////////////////////////
+
+
+
 

@@ -7,7 +7,7 @@ Material:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: Ripple 2
+  m_Name: Ripple 3
   m_Shader: {fileID: -6465566751694194690, guid: 079c67319893ff54490f9ab6dc696c08,
     type: 3}
   m_ValidKeywords: []
@@ -83,7 +83,7 @@ Material:
     - Vector1_716FEA3: 2.56
     - Vector1_77CAEE3B: 6.33
     - Vector1_A202C24: 4.06
-    - Vector1_BDFFCBCA: -0.11
+    - Vector1_BDFFCBCA: 0.34
     - _AlphaClip: 0
     - _Blend: 0
     - _BumpScale: 1
@@ -121,7 +121,7 @@ Material:
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
     - _SpecColor: {r: 0.19999996, g: 0.19999996, b: 0.19999996, a: 1}
   m_BuildTextureStacks: []
---- !u!114 &6719108451878488191
+--- !u!114 &5184172311338352338
 MonoBehaviour:
   m_ObjectHideFlags: 11
   m_CorrespondingSourceObject: {fileID: 0}

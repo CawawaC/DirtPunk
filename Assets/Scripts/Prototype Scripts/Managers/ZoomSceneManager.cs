@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
+using TMPro;
 /*
 This is the manager of the first scene of the game
 It allows the player to click on the mother plant
@@ -27,8 +28,13 @@ public class ZoomSceneManager : MonoBehaviour
     private float timer2;
 
     //UI elements
+    public GameObject dialogueBox;
     public GameObject blackBox;
     private CanvasGroup blackBoxCG;
+    private IEnumerator firstCR;
+
+    //General variables
+    private WaitForFixedUpdate waitForFixedUpdate = new WaitForFixedUpdate();
 
     private void Awake()
     {
@@ -47,16 +53,30 @@ public class ZoomSceneManager : MonoBehaviour
         zoomLoc = mainCamera.transform.position;
         zoomLoc = zoomLocObj.transform.position;
         blackBoxCG = blackBox.GetComponent<CanvasGroup>();
-        blackBoxCG.alpha = 0;
+        blackBoxCG.alpha = 1;
+        firstCR = FadeIn();
+        StartCoroutine(firstCR);
     }
 
     //function called when click area button is pressed in plant zoom scene
     public void PlantClicked() {
+        dialogueBox.SetActive(false);
         StartCoroutine(ZoomIn());
+    }
+
+    //coroutine that fades scene in
+    private IEnumerator FadeIn()
+    {
+        while (blackBoxCG.alpha >= 0)
+        {
+            yield return waitForFixedUpdate;
+            blackBoxCG.alpha -= 0.3f * Time.deltaTime;
+        }
     }
 
     private IEnumerator ZoomIn()
     {
+        StopCoroutine(firstCR);
         timer = 0.0f;
         timer2 = 0.0f;
         while (timer < zoomTime)
@@ -71,6 +91,6 @@ public class ZoomSceneManager : MonoBehaviour
             }   
         }
         //call next scene when zoom and fade complete
-        SceneManager.LoadScene(1);
+        SceneManager.LoadScene(2);
     }
 }
