@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 0}
-  m_IndirectSpecularColor: {r: 0.18028378, g: 0.22571412, b: 0.30692285, a: 1}
+  m_IndirectSpecularColor: {r: 0.18028334, g: 0.22571328, b: 0.3069217, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -7782,6 +7782,18 @@ MonoBehaviour:
   DL2: {fileID: 1384863355}
   completionEffects: {fileID: 634688906}
   globalVol: {fileID: 832575517}
+  nodeGrowingEffect:
+  - {fileID: 36561532}
+  - {fileID: 891471086}
+  - {fileID: 531497477}
+  - {fileID: 1368896938}
+  - {fileID: 2029647934}
+  nodeClickingEffect:
+  - {fileID: 807854565}
+  - {fileID: 424936621}
+  - {fileID: 61615780}
+  - {fileID: 1285920578}
+  - {fileID: 1172408261}
   blackBox: {fileID: 1710420176}
   leftClick:
     m_Name: Left Click

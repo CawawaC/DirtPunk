@@ -30,6 +30,8 @@ public class Manager : MonoBehaviour {
     public GameObject DL2;
     public GameObject completionEffects;
     public GameObject globalVol;
+    public GameObject[] nodeGrowingEffect;
+    public GameObject[] nodeClickingEffect;
 
     //UI elements
     public GameObject blackBox;
@@ -124,6 +126,13 @@ public class Manager : MonoBehaviour {
         DL2.SetActive(false);
         globalVol.SetActive(true);
         completionEffects.SetActive(false);
+        foreach (GameObject e in nodeClickingEffect) {
+            e.SetActive(false);
+        }
+        foreach (GameObject e in nodeGrowingEffect)
+        {
+            e.SetActive(false);
+        }
 
         //initialize drawing variables
         linePoints = new List<Vector3>();
@@ -135,8 +144,6 @@ public class Manager : MonoBehaviour {
         pollutantList = new List<GameObject>();
         initiallyVisiblePollutants = 0;
         noiseIndex = -1;
-        //Debugging
-        //noiseChoices = "12345";
         noiseChoices = "";
         amContainer.SetActive(false);
         gmList = GameObject.FindGameObjectsWithTag("GrowingMicrobe");
@@ -430,7 +437,9 @@ public class Manager : MonoBehaviour {
                     hintPlayed = true;
                 } else if (hit.collider != null && hit.collider.gameObject.CompareTag("PuzzleNoise") && !Input.GetKey(KeyCode.P) && nodesGrown && !puzzleSolved && (int)currentStory.variablesState["puzzleEnabled"] == 1) {
                     int.TryParse(hit.collider.gameObject.name.Substring(7, 1), out noiseIndex);
-                    if (noiseIndex > -1) {
+                    if (noiseIndex > 0) {
+                        //call coroutine that turns related visual effect on and off
+                        StartCoroutine(NodeClicked(noiseIndex-1));
                         noiseChoices = String.Concat(noiseChoices, noiseIndex);
                         Debug.Log(noiseChoices);
                         audioPuzzle.PlayElement(noiseIndex - 1);
@@ -533,12 +542,25 @@ public class Manager : MonoBehaviour {
     }
 
     //coroutine that loads dialogue after certain amount of seconds
+    //going to use to turn on some effects as well as it is only called when nodules grow
     IEnumerator LoadAfterSec(string path, int sec)
     {
         //yield on a new YieldInstruction that waits for 5 seconds.
         yield return new WaitForSeconds(sec);
+        foreach (GameObject e in nodeGrowingEffect)
+        {
+            e.SetActive(true);
+        }
         dialogueOpen = true;
         LoadNewStory(path);
+    }
+
+    //coroutine in charge of dragging and dropping called in Rightclicked function
+    private IEnumerator NodeClicked(int nodeInd)
+    {
+        nodeClickingEffect[nodeInd].SetActive(true);
+        yield return new WaitForSeconds(20);
+        nodeClickingEffect[nodeInd].SetActive(false);
     }
 
     //coroutine that fades scene in
