@@ -5,7 +5,7 @@ VAR fadeToBlack=0
 //start of main scene
 === PollutionInstructions ====
 = PIStitch2
-<color=lightblue>Mother Tree:</color> What once fed us and let us grow tall, has choked the soil. There is no room for our songs. Residuals still crowd <font="Dirtpunk SDF">this</font> space. <br><color=yellow>Click and drag the red pollutants off the screen</color>
+<color=lightblue>Mother Tree:</color> What once fed us and let us grow tall, has choked the soil. There is no room for our songs. Residuals still crowd <font="Dirtpunk SDF">this</font> space. <br><color=yellow>Drag the red pollutants off the screen</color>
     + [Start]
         -> END
 
@@ -18,7 +18,7 @@ VAR fadeToBlack=0
         
  === PollutionRemoval2 ====  
 = PRStitch 
-<color=green>Plant:</color> Don’t cut me off! <font="Dirtpunk SDF">Oh</font>, you’re <i>killing</i> me, you STAMENPISTEL!<br><color=lightblue>Mother Tree:</color> Keep it up.
+<color=green>Plant:</color> Don’t cut me off! <font="Dirtpunk SDF">Oh</font>, you’re <i>killing</i> me, you STAMENPISTIL!<br><color=lightblue>Mother Tree:</color> Keep it up.
     + [padding]
         -> END
         
@@ -91,7 +91,7 @@ VAR fadeToBlack=0
         -> MSStitch2
        
 = MSStitch2
-<color=green>Plant:</color> WOW! What are these tiny dots doing? What is this thrilling, filling feeling? 
+<color=green>Plant:</color> WOW! What are these tiny dots doing? This thrilling, filling feeling? 
     + [Next]
         -> MSStitch3
 
@@ -114,7 +114,7 @@ VAR fadeToBlack=0
 //Come straight to fungi feeding sequence after microbe convo
 === FeedFungi ====
 = FFStitch2
-<color=orange>Fungi:</color> I’m <font="Dirtpunk SDF">small</font>, yes. But bring me food and I’ll thread myself through all things and entwine you and the earth. No cap!<br><color=yellow>Drag and drop small white particles onto the fuzzy white fungi.</color>
+<color=orange>Fungi:</color> I’m <font="Dirtpunk SDF">small</font>, yes. But bring me food and I’ll thread myself through all things, entwining you and the earth. No cap!<br><color=yellow>Drag and drop small white particles onto the fuzzy white fungi</color>
     + [Start]
         -> END
 //Dialogue called at various points of fungi feeding
@@ -125,7 +125,7 @@ VAR fadeToBlack=0
         -> END
 === FungiFed2 ====
 = FFStitch
-<color=lightblue>Mother Tree:</color> No one should be alone, least of all a little fungi. <font="Dirtpunk SDF">Fill</font> up their emptiness and be filled.
+<color=lightblue>Mother Tree:</color> No one should be alone, least of all a small fungi. <font="Dirtpunk SDF">Fill</font> up their emptiness and be filled yourself.
     + [padding]
         -> END
 === FungiFed3 ====
@@ -169,17 +169,17 @@ VAR fadeToBlack=0
         -> PCStitch5
         
 = PCStitch5
-<color=green>Plant:</color> We can sing louder than anyone, we can <i>stamenpistel</i> SING! 
+<color=green>Plant:</color> We can sing louder than anyone, we can <i>stamenpistil</i> SING! 
     + [Next]
         -> PCStitch6
         
 = PCStitch6
-<color=lightblue>Mother Tree:</color> Across the web, I have felt roots burn, wither, and drown. Now that you have found each other, the quiet void has cracked open. The song has returned. 
+<color=lightblue>Mother Tree:</color> Across the web, I have felt roots burn, wither, and drown. Now that you have found each other, the quiet void has cracked open. The song returns. 
     + [Next]
         -> PCStitch7
         
 = PCStitch7
-<color=lightblue>Mother Tree:</color> The louder the song, the more we can pull smog from the sky. Bury it in our roots deep in the earth. And <i>sing</i>.
+<color=lightblue>Mother Tree:</color> The louder the song, the more we can pull smog from the sky. Bury it in our roots deep in the earth. And <i>sing</i>, which brings us resilience to face the approaching weird and wild.
     + [Next]
         -> PCStitch8
 

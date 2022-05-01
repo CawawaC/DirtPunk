@@ -17,7 +17,7 @@ public class RockSpawner : MonoBehaviour
     public GameObject prefab2;
     public GameObject prefab3;
     public GameObject prefab4;
-    public static int spawnNumber = 50;
+    public static int spawnNumber = 35;
 
     //food
     public GameObject foodPrefab;
